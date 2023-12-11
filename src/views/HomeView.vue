@@ -1,18 +1,29 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <MapCatalog :maps="maps" />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import { mapState } from 'vuex';
+import MapCatalog from '@/components/MapCatalog.vue';
 
 export default {
   name: 'HomeView',
   components: {
-    HelloWorld
-  }
-}
+    MapCatalog,
+  },
+  computed: {
+    ...mapState(['maps']),
+  },
+  mounted() {
+    this.$store.dispatch('fetchMaps');
+  },
+  beforeRouteEnter(to, from, next) {
+  next(vm => {
+    vm.$store.commit('clearSelectedMap');
+  });
+},
+  // props, data, methods...
+};
 </script>
