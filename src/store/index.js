@@ -85,13 +85,34 @@ export default createStore({
               value: feature.properties[attribute.attribute]
             };
           });
+    
+          let template = correspondingDataset.dataset.featureinfo_custom_template;
+
+          // Create an object with Key-Value structure where key is the placeholder (${properties.property} in feature.properties), value is the corresponding value for each property
+          let replacements = {};
+          for (let property in feature.properties) {
+            replacements[`\\$\\{properties.${property}\\}`] = feature.properties[property];
+          }
+
+          // Iterate in the object to find keys in template and replace with corresponding values
+          for (let placeholder in replacements) {
+            template = template.replace(new RegExp(placeholder, 'g'), replacements[placeholder]);
+          }
+
+          // Add class="wrap-text" to every <pre> tag
+          template = template.replace(/<pre>/g, '<pre style="word-wrap: break-word;">');
+
+          // Set feature.featureinfo_custom_template with transformed template
+          feature.featureinfo_custom_template = template;
         }
+        feature.title = correspondingDataset.dataset.title;
     
         return feature;
       });
     
       // Push the modified features to the state
       state.features.push(...modifiedFeatures);
+      console.log('features', state.features);
     },
     resetFeatures(state) {
       state.features = [];

@@ -49,7 +49,7 @@
       </v-card>
     </v-navigation-drawer>
 
-    <v-navigation-drawer v-model="$store.state.secondDrawer" app location="right" width="300">
+    <v-navigation-drawer v-model="$store.state.secondDrawer" app location="right" width="450">
       <!-- Add your second drawer content here -->
       <v-card class="d-flex flex-column fill-height mx-auto" variant="tonal" max-width="450" color="indigo">
         <v-card-actions>
@@ -62,7 +62,36 @@
           </div>
         </v-card-item>
         <v-card-text>
-          <v-expansion-panels>
+          <!-- content of the panel... -->
+          <v-expansion-panels v-model="activePanel">
+            <v-expansion-panel v-if="specialFeature" class="v-card">
+              <v-expansion-panel-title>
+                <template v-slot:actions>
+                  <v-icon color="indigo" icon="mdi-plus" @click="traceFeature(specialFeature.geometry)"></v-icon>
+                </template>
+                {{ specialFeature.title }}
+              </v-expansion-panel-title>
+              <v-expansion-panel-text class="overflow-y-auto">
+                <div v-html="specialFeature.featureinfo_custom_template"></div>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+            <v-expansion-panel v-for="(feature, index) in otherFeatures" :key="index" class="v-card">
+              <v-expansion-panel-title>
+                <template v-slot:actions>
+                  <v-icon color="indigo" icon="mdi-plus" @click="traceFeature(feature.geometry)"></v-icon>
+                </template>
+                {{ feature.title }}
+              </v-expansion-panel-title>
+              <v-expansion-panel-text class="overflow-y-auto">
+                <div v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
+                  <p><strong>{{ attribute.attribute_label }}:</strong></p>
+                  <pre class="wrap-text">{{ attribute.value }}</pre>
+                </div>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
+
+          <!--v-expansion-panels>
             <v-expansion-panel v-for="(feature, index) in features" :key="index" class="v-card">
               <v-expansion-panel-title>
                 <template v-slot:actions>
@@ -70,13 +99,15 @@
                 </template>
                 {{ firstVisibleAttributes[index].attribute_label }} | {{ firstVisibleAttributes[index].value }}
               </v-expansion-panel-title>
-              <v-expansion-panel-text>
+              <v-expansion-panel-text class="overflow-y-auto">
                 <div v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
-                  <p><strong>{{ attribute.attribute_label }}: </strong>{{ attribute.value }}</p>
+                  <p><strong>{{ attribute.attribute_label }}:</strong></p>
+                  <pre class="wrap-text">{{ attribute.value }}</pre>
                 </div>
+                <div class="wrap-text" v-html="feature.featureinfo_custom_template"></div>
               </v-expansion-panel-text>
             </v-expansion-panel>
-          </v-expansion-panels>
+          </v-expansion-panels-->
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
@@ -94,6 +125,7 @@ export default {
   data() {
     return {
       drawer: false,  // Initialize `drawer` to `false`
+      activePanel: 0,
     };
   },
   methods: {
@@ -103,8 +135,14 @@ export default {
   computed: {
     ...mapGetters(['markedCoordinate']),
     ...mapState(['markedCoordinate', 'features']),
+    specialFeature() {
+      return this.features.find(feature => feature.title === 'Ordenanza Zonificación de Maracaibo');
+    },
+    otherFeatures() {
+      return this.features.filter(feature => feature.title !== 'Ordenanza Zonificación de Maracaibo');
+    },
     visibleAttributes() {
-      return this.features.map(feature => {
+      return this.otherFeatures.map(feature => {
         return feature.properties.attribute_set.filter(attribute_set => attribute_set.visible);
       });
     },
@@ -114,7 +152,7 @@ export default {
       });
     },
     title() {
-      return this.$store.state.selectedMap ? this.$store.state.selectedMap.raw_abstract : 'Atlanti';
+      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Atlanti';
     },
   },
 };
@@ -123,5 +161,25 @@ export default {
 <style scoped>
 .router-container {
   height: calc(100vh - 64px); /* Adjust as needed */
+}
+.overflow-y-auto {
+  overflow-y: auto;
+  max-height: 450px; /* Adjust this value as needed */
+}
+
+.wrap-text {
+  white-space: pre-wrap;       /* CSS 3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+.wrap-content pre, .wrap-content code {
+  white-space: pre-wrap;       /* CSS 3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 </style>

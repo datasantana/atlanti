@@ -93,7 +93,9 @@
                                         <v-switch color="indigo" v-model="layer.visibility" @change="$store.commit('toggleLayerVisibility', index)"></v-switch>
                                     </v-col>
                                 </v-row>
-                                <v-img :src="layer.dataset.links[0].url" :width=150></v-img>
+                                <div class="overflow-y-auto">
+                                    <v-img :src="layer.dataset.links[0].url" :width=150 ></v-img>
+                                </div>
                             </v-expansion-panel-text>
                         </v-expansion-panel>
                     </v-expansion-panels>
@@ -224,5 +226,10 @@ export default {
   position: absolute;
   margin: 30px;
   /* specify top, left, width, and height as needed */
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
+  max-height: 150px; /* Adjust this value as needed */
 }
 </style>
