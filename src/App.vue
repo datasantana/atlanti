@@ -58,29 +58,29 @@
         <v-divider></v-divider>
         <v-card-item>
           <div class="text-overline mb-1">
-            lat: {{ markedCoordinate.lat.toFixed(4) }} - lng: {{ markedCoordinate.lng.toFixed(4) }}
+            lat: {{ markedCoordinate[1] }} - lng: {{ markedCoordinate[0] }}
           </div>
         </v-card-item>
         <v-card-text>
           <!-- content of the panel... -->
-          <v-expansion-panels v-model="activePanel">
-            <v-expansion-panel v-if="specialFeature" class="v-card">
-              <v-expansion-panel-title>
+          <v-expansion-panels v-model="activePanel" v-if="specialFeature">
+            <v-expansion-panel v-for="(feature, index) in specialFeature" :key="index" class="v-card">
+              <v-expansion-panel-title >
                 <template v-slot:actions>
-                  <v-icon color="indigo" icon="mdi-plus" @click="traceFeature(specialFeature.geometry)"></v-icon>
+                  <v-icon color="indigo" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
                 </template>
-                {{ specialFeature.title }}
+                {{ feature.title }} | {{ feature.properties.attribute_set[0].value }}
               </v-expansion-panel-title>
-              <v-expansion-panel-text class="overflow-y-auto">
-                <div v-html="specialFeature.featureinfo_custom_template"></div>
+              <v-expansion-panel-text class="overflow-y-auto" >
+                <div v-html="feature.featureinfo_custom_template"></div>
               </v-expansion-panel-text>
             </v-expansion-panel>
             <v-expansion-panel v-for="(feature, index) in otherFeatures" :key="index" class="v-card">
               <v-expansion-panel-title>
                 <template v-slot:actions>
-                  <v-icon color="indigo" icon="mdi-plus" @click="traceFeature(feature.geometry)"></v-icon>
+                  <v-icon color="indigo" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
                 </template>
-                {{ feature.title }}
+                {{ feature.title }} | {{ firstVisibleAttributes[index].value }}
               </v-expansion-panel-title>
               <v-expansion-panel-text class="overflow-y-auto">
                 <div v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
@@ -90,24 +90,6 @@
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
-
-          <!--v-expansion-panels>
-            <v-expansion-panel v-for="(feature, index) in features" :key="index" class="v-card">
-              <v-expansion-panel-title>
-                <template v-slot:actions>
-                  <v-icon color="indigo" icon="mdi-plus" @click="traceFeature(feature.geometry)"></v-icon>
-                </template>
-                {{ firstVisibleAttributes[index].attribute_label }} | {{ firstVisibleAttributes[index].value }}
-              </v-expansion-panel-title>
-              <v-expansion-panel-text class="overflow-y-auto">
-                <div v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
-                  <p><strong>{{ attribute.attribute_label }}:</strong></p>
-                  <pre class="wrap-text">{{ attribute.value }}</pre>
-                </div>
-                <div class="wrap-text" v-html="feature.featureinfo_custom_template"></div>
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels-->
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
@@ -131,12 +113,15 @@ export default {
   methods: {
     ...mapMutations(['closeSecondDrawer']),
     ...mapActions(['traceFeature']),
+    handleClick(geometry) {
+      this.$store.dispatch('traceFeature', geometry);
+    },
   },
   computed: {
     ...mapGetters(['markedCoordinate']),
     ...mapState(['markedCoordinate', 'features']),
     specialFeature() {
-      return this.features.find(feature => feature.title === 'Ordenanza Zonificación de Maracaibo');
+      return this.features.filter(feature => feature.title === 'Ordenanza Zonificación de Maracaibo');
     },
     otherFeatures() {
       return this.features.filter(feature => feature.title !== 'Ordenanza Zonificación de Maracaibo');

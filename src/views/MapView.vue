@@ -94,7 +94,7 @@
                                     </v-col>
                                 </v-row>
                                 <div class="overflow-y-auto">
-                                    <v-img :src="layer.dataset.links[0].url" :width=150 ></v-img>
+                                    <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
                                 </div>
                             </v-expansion-panel-text>
                         </v-expansion-panel>
@@ -230,6 +230,6 @@ export default {
 
 .overflow-y-auto {
   overflow-y: auto;
-  max-height: 150px; /* Adjust this value as needed */
+  max-height: 100px; /* Adjust this value as needed */
 }
 </style>
