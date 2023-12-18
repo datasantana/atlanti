@@ -36,6 +36,7 @@ export default createStore({
           }
         };
       });
+      console.log('layers in store', state.mapLayers);
     },
     clearSelectedMap(state) {
       state.selectedMap = null;
@@ -94,7 +95,7 @@ export default createStore({
           }
 
           // Add class="wrap-text" to every <pre> tag
-          template = template.replace(/<pre>/g, '<pre style="word-wrap: break-word;">');
+          template = template.replace(/<pre>/g, '<pre style="white-space: pre-wrap;">');
 
           // Set feature.featureinfo_custom_template with transformed template
           feature.featureinfo_custom_template = template;
@@ -106,6 +107,37 @@ export default createStore({
     
       // Push the modified features to the state
       state.features.push(...modifiedFeatures);
+    },
+    joinCategoryToMapLayers(state) {
+      // Iterate over mapDatasets and print each dataset's pk
+      //state.mapDatasets.forEach(dataset => {
+      //  console.log('typeof dataset.dataset.pk:', typeof dataset.dataset.pk);
+      //  console.log('dataset.pk:', dataset.dataset.pk);
+      //});
+
+      // Iterate over mapLayers
+      state.mapLayers.forEach(layer => {
+        // Check if layer has dataset and pk
+        if (layer.dataset.pk) {
+          // Print pk
+          //console.log('typeof layer.dataset.pk:', typeof layer.dataset.pk);
+          //console.log('layer.dataset.pk:', layer.dataset.pk);
+
+          // Find the corresponding dataset in mapDatasets
+          const dataset = state.mapDatasets.find(dataset => Number(dataset.dataset.pk) === Number(layer.dataset.pk));
+          //console.log('matching dataset', dataset);
+  
+          // If a corresponding dataset is found, add the dataset's category to the layer's dataset
+          if (dataset) {
+            layer.dataset = {
+              ...layer.dataset,
+              category: dataset.dataset.category,
+            };
+          }
+        }
+      });
+  
+      //console.log('Updated mapLayers:', state.mapLayers);
     },
     resetFeatures(state) {
       state.features = [];
@@ -147,6 +179,8 @@ export default createStore({
         datasets.push(response.data);
       }
       commit('setMapDatasets', datasets);
+      console.log('datasets in store', state.mapDatasets);
+      commit('joinCategoryToMapLayers');
     },
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);

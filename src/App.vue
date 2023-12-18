@@ -72,7 +72,7 @@
                 {{ feature.title }} | {{ feature.properties.attribute_set[0].value }}
               </v-expansion-panel-title>
               <v-expansion-panel-text class="overflow-y-auto" >
-                <div v-html="feature.featureinfo_custom_template"></div>
+                <div class="wrap-text" v-html="feature.featureinfo_custom_template"></div>
               </v-expansion-panel-text>
             </v-expansion-panel>
             <v-expansion-panel v-for="(feature, index) in otherFeatures" :key="index" class="v-card">
@@ -152,19 +152,12 @@ export default {
   max-height: 450px; /* Adjust this value as needed */
 }
 
-.wrap-text {
+.wrap-text pre {
   white-space: pre-wrap;       /* CSS 3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  /*white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  /*white-space: -pre-wrap;      /* Opera 4-6 */
+  /*white-space: -o-pre-wrap;    /* Opera 7 */
+  /*word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
-.wrap-content pre, .wrap-content code {
-  white-space: pre-wrap;       /* CSS 3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-}
 </style>

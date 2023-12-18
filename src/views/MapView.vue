@@ -74,29 +74,26 @@
                     </v-row>
                 </v-card-title>
                 <v-card-text>
+                    <!--Layers panel-->
                     <v-expansion-panels>
-                        <v-expansion-panel v-for="layer in mapLayers" :key="layer.id" class="v-card">
-                            <v-expansion-panel-title>
-                                {{ layer.dataset.title }}
-                                <template v-slot:actions>
-                                    <v-icon color="indigo" icon="mdi-information">
-                                    </v-icon>
-                                </template>
-                            </v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <!-- content of the panel... -->
-                                <v-row class="d-flex align-center justify-space-between">
-                                    <v-col cols="10">
-                                        <v-slider color="indigo" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
-                                    </v-col>
-                                    <v-col cols="2">
-                                        <v-switch color="indigo" v-model="layer.visibility" @change="$store.commit('toggleLayerVisibility', index)"></v-switch>
-                                    </v-col>
-                                </v-row>
-                                <div class="overflow-y-auto">
-                                    <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
-                                </div>
-                            </v-expansion-panel-text>
+                        <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
+                            <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
+                                <v-expansion-panel-text>
+                                    <!--Layers and controls-->
+                                    <section>
+                                        <details v-for="layer in group" :key="layer.id">
+                                            <summary>{{ layer.dataset.title }}</summary>
+                                            <p class="text-caption">{{ layer.dataset.abstract }}</p>
+                                            <div class="layer-controls">
+                                                <v-slider class="layer-opacity" color="indigo" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
+                                                <v-switch class="layer-visibility" color="indigo" v-model="layer.visibility" @change="$store.commit('toggleLayerVisibility', index)"></v-switch>
+                                            </div>
+                                            <div class="legend overflow-y-auto">
+                                                <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
+                                            </div>
+                                        </details>
+                                    </section>
+                                </v-expansion-panel-text>
                         </v-expansion-panel>
                     </v-expansion-panels>
                 </v-card-text>
@@ -173,6 +170,26 @@ export default {
     },
     computed: {
         ...mapState(['mapLayers', 'selectedMap']),
+        groupedLayers() {
+            return this.mapLayers.reduce((groups, layer) => {
+                if (layer.dataset && layer.dataset.category) {
+                let category;
+                if (layer.dataset.category.identifier === 'boundaries') {
+                    category = 'Límites';
+                } else if (layer.dataset.category.identifier === 'planningCadastre') {
+                    category = 'Ordenamiento';
+                } else {
+                    category = layer.dataset.category.identifier;
+                }
+
+                if (!groups[category]) {
+                    groups[category] = [];
+                }
+                groups[category].push(layer);
+                }
+                return groups;
+            }, {});
+        },
     },
     mounted() {
         this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
@@ -231,5 +248,20 @@ export default {
 .overflow-y-auto {
   overflow-y: auto;
   max-height: 100px; /* Adjust this value as needed */
+}
+
+.layer-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.layer-opacity {
+  width: 70%;
+}
+
+.layer-visibility {
+  margin-left: 30px;
 }
 </style>
