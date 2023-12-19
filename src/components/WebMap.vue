@@ -40,7 +40,7 @@ export default {
         // Add wms source provided by the selected map
         map.on('load', () => {
             if (this.mapLayers) {
-                [...this.mapLayers].reverse().forEach((layer, index) => {
+                [...this.mapLayers].reverse().forEach((layer) => {
                 const baseUrl = 'https://mapas.alcaldiademaracaibo.org/geoserver/ows';
                 const layerName = layer.dataset.alternate;
                 const bbox = '{bbox-epsg-3857}';
@@ -50,16 +50,16 @@ export default {
                 const layerOpacity = layer.opacity;
                 const layerVisibility = layer.visibility ? 'visible' : 'none';
 
-                map.addSource(`wms-source-${index}`, {
+                map.addSource(`wms-source-${layer.pk}`, {
                 'type': 'raster',
                 'tiles': [newUrl],
                 'tileSize': 256
                 });
 
                 map.addLayer({
-                    'id': `wms-layer-${index}`,
+                    'id': `wms-layer-${layer.pk}`,
                     'type': 'raster',
-                    'source': `wms-source-${index}`,
+                    'source': `wms-source-${layer.pk}`,
                     'paint': {
                         'raster-opacity': layerOpacity, // Use the "opacity" variable to set the opacity of the layer
                     },
@@ -99,15 +99,16 @@ export default {
             if (curr.zoom != next.zoom) map.setZoom(next.zoom)
         },
         '$store.state.mapLayers': {
-            deep: true,
-            handler(newMapLayers) {
-                newMapLayers.forEach((layer, index) => {
-                    if (this.map && this.map.getLayer(`wms-layer-${index}`)) {
-                        this.map.setLayoutProperty(`wms-layer-${index}`, 'visibility', layer.visibility ? 'visible' : 'none');
-                        this.map.setPaintProperty(`wms-layer-${index}`, 'raster-opacity', layer.opacity);
-                    }
-                });
+            handler(newVal) {
+            newVal.forEach((layer) => {
+                const mapLayer = this.map.getLayer(`wms-layer-${layer.pk}`);
+                if (mapLayer) {
+                this.map.setLayoutProperty(`wms-layer-${layer.pk}`, 'visibility', layer.visibility ? 'visible' : 'none');
+                this.map.setPaintProperty(`wms-layer-${layer.pk}`, 'raster-opacity', layer.opacity);
+                }
+            });
             },
+            deep: true,
         },
         tracedFeature(newFeature) {
             if (this.tracedFeatureId) {
@@ -142,7 +143,7 @@ export default {
                 type: 'line',
                 source: this.tracedFeatureId,
                 paint: {
-                    'line-color': '#00FFFF', // cyan
+                    'line-color': '#04BF55', // accent color
                     'line-width': 3, // adjust this value as needed
                 },
                 });
@@ -181,8 +182,17 @@ export default {
                 this.marker.remove();
             }
 
+            // Create a new HTML element
+            let el = document.createElement('div');
+            el.className = 'marker';
+            el.style.backgroundColor = '#F2BD1D'; //error color
+            el.style.border = '2px solid white';
+            el.style.borderRadius = '50%';
+            el.style.width = '20px';
+            el.style.height = '20px';
+
             // Create a new marker and add it to the map at the clicked location
-            this.marker = new mapboxgl.Marker()
+            this.marker = new mapboxgl.Marker(el)
                 .setLngLat(e.lngLat)
                 .addTo(this.map);
 

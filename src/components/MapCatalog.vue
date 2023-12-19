@@ -1,21 +1,21 @@
 <template>
     <div class="catalog-container">
-        <v-card v-for="map in maps" :key="map.id" variant="tonal" class="mx-auto" max-width="450" color="indigo">
+        <v-card v-for="map in maps" :key="map.id" variant="flat" class="mx-auto bg-secondary on-secondary" max-width="450">
             <v-card-item>
-                <div class="text-overline mb-1">
+                <div class="text-overline mb-1" color="accent">
                     Mapa | {{ map.attribution }}
                 </div>
             </v-card-item>
             <v-divider></v-divider>
             <v-img :src="map.thumbnail_url" aspect-ratio="1.75"></v-img>
-            <v-card-title class="text-h6 mb-1">{{ map.raw_abstract }}</v-card-title>
-            <v-card-text class="text-caption">{{ map.raw_purpose }}</v-card-text>
+            <v-card-title class="text-h6 mb-1">{{ map.title }}</v-card-title>
+            <v-card-text class="text-caption" color="accent">{{ map.raw_purpose }}</v-card-text>
             <!-- card content... -->
             <v-divider></v-divider>
             <v-card-actions class="d-flex justify-space-between">
-                <v-btn color="primary" @click="goToMapView(map.pk)">Ver mapa</v-btn>
+                <v-btn color="accent" @click="goToMapView(map.pk)">Ver mapa</v-btn>
                 <v-btn icon @click="openDetails(map.detail_url)">
-                    <v-icon>mdi-information</v-icon>
+                    <v-icon color="error">mdi-information</v-icon>
                 </v-btn>
             </v-card-actions>
         </v-card>

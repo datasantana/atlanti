@@ -5,10 +5,10 @@
             <Map v-model="location" :mapLayers="mapLayers" ref="webMap" />
         </div>
         <div id="sidebar" class="container">
-            <v-card variant="tonal" class="mx-auto" max-width="400" color="indigo">
+            <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="400">
                 <v-tabs
                     v-model="tab"
-                    bg-color="indigo"
+                    bg-color="primary"
                     align-tabs="center"
                 >
                     <v-tab value="place">Buscar lugar</v-tab>
@@ -23,7 +23,7 @@
                                         <v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field>
                                     </v-col>
                                     <v-col cols="2">
-                                        <v-btn id="search-place" size="x-small" icon="mdi-map-search" color="indigo"></v-btn>
+                                        <v-btn id="search-place" size="x-small" icon="mdi-map-search" color="accent"></v-btn>
                                     </v-col>
                                 </v-row>
                             </v-form>
@@ -56,7 +56,7 @@
                                     </v-form>
                                 </v-col>
                                 <v-col cols="2">
-                                    <v-btn id="search-coordinate" size="x-small" icon="mdi-crosshairs-question" color="indigo" @click="reprojectAndEmit"></v-btn>
+                                    <v-btn id="search-coordinate" size="x-small" icon="mdi-crosshairs-question" color="accent" @click="reprojectAndEmit"></v-btn>
                                 </v-col>
                             </v-row>
                         </v-window-item>
@@ -85,8 +85,8 @@
                                             <summary>{{ layer.dataset.title }}</summary>
                                             <p class="text-caption">{{ layer.dataset.abstract }}</p>
                                             <div class="layer-controls">
-                                                <v-slider class="layer-opacity" color="indigo" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
-                                                <v-switch class="layer-visibility" color="indigo" v-model="layer.visibility" @change="$store.commit('toggleLayerVisibility', index)"></v-switch>
+                                                <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
+                                                <v-switch class="layer-visibility" color="accent" v-model="layer.visibility" ></v-switch>
                                             </div>
                                             <div class="legend overflow-y-auto">
                                                 <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
@@ -109,7 +109,7 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="2">
-                            <v-btn size="small" icon="mdi-home" @click="location = { lng: -71.601944, lat: 10.631667, zoom: 11, pitch: 0, bearing: 0 }" color="indigo"></v-btn>
+                            <v-btn size="small" icon="mdi-home" @click="location = { lng: -71.601944, lat: 10.631667, zoom: 11, pitch: 0, bearing: 0 }" color="accent"></v-btn>
                         </v-col>
                     </v-row>
                 </v-card-actions>
@@ -171,24 +171,28 @@ export default {
     computed: {
         ...mapState(['mapLayers', 'selectedMap']),
         groupedLayers() {
-            return this.mapLayers.reduce((groups, layer) => {
+            const groups = this.mapLayers.reduce((groups, layer) => {
                 if (layer.dataset && layer.dataset.category) {
-                let category;
-                if (layer.dataset.category.identifier === 'boundaries') {
-                    category = 'Límites';
-                } else if (layer.dataset.category.identifier === 'planningCadastre') {
-                    category = 'Ordenamiento';
-                } else {
-                    category = layer.dataset.category.identifier;
-                }
+                    let category;
+                    if (layer.dataset.category.identifier === 'boundaries') {
+                        category = 'Límites';
+                    } else if (layer.dataset.category.identifier === 'planningCadastre') {
+                        category = 'Ordenamiento';
+                    } else {
+                        category = layer.dataset.category.identifier;
+                    }
 
-                if (!groups[category]) {
-                    groups[category] = [];
-                }
-                groups[category].push(layer);
+                    if (!groups[category]) {
+                        groups[category] = [];
+                    }
+                    groups[category].push(layer);
                 }
                 return groups;
             }, {});
+
+            //console.log(groups);  // Log `groupedLayers` in the console
+
+            return groups;
         },
     },
     mounted() {

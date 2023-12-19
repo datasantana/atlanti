@@ -1,27 +1,28 @@
 <template>
   <v-app>
-    <v-app-bar app color="indigo" :elevation="0">
-      <!-- Add your logo here -->
-      <template v-slot:prepend>
+    <v-app-bar class="bg-secondary" :elevation="0">
+      <!--template v-slot:prepend>
         <v-btn icon @click="drawer = !drawer">
-          <v-icon>mdi-earth</v-icon>
+          <v-icon color="accent">mdi-earth</v-icon>
         </v-btn>
-      </template>
-      <v-toolbar-title>{{ title }}</v-toolbar-title>
+      </template-->
+      <!-- Add your logo here -->
+      <v-img :src="logo" max-height="35" max-width="150" class="mr-0"></v-img>
+      <v-toolbar-title color="accent">{{ title }}</v-toolbar-title>
 
       <!-- Add spacer to push content to the right -->
       <v-spacer></v-spacer>
 
       <!-- Add your buttons here -->
-      <v-btn>Login</v-btn>
+      <!--v-btn color="accent">Login</v-btn-->
       <v-btn icon>
-        <v-icon>mdi-information</v-icon>
+        <v-icon color="error">mdi-information</v-icon>
       </v-btn>
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer" app width="300">
       <!-- Add your drawer content here -->
-      <v-card class="d-flex flex-column fill-height mx-auto" variant="tonal" max-width="450" color="indigo">
+      <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="tonal" max-width="450">
         <v-card-item>
           <div class="text-overline mb-1">
             Title
@@ -51,7 +52,7 @@
 
     <v-navigation-drawer v-model="$store.state.secondDrawer" app location="right" width="450">
       <!-- Add your second drawer content here -->
-      <v-card class="d-flex flex-column fill-height mx-auto" variant="tonal" max-width="450" color="indigo">
+      <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="flat" max-width="450">
         <v-card-actions>
           <v-btn icon="mdi-close" @click="closeSecondDrawer"></v-btn>
         </v-card-actions>
@@ -67,7 +68,7 @@
             <v-expansion-panel v-for="(feature, index) in specialFeature" :key="index" class="v-card">
               <v-expansion-panel-title >
                 <template v-slot:actions>
-                  <v-icon color="indigo" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
+                  <v-icon color="accent" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
                 </template>
                 {{ feature.title }} | {{ feature.properties.attribute_set[0].value }}
               </v-expansion-panel-title>
@@ -78,7 +79,7 @@
             <v-expansion-panel v-for="(feature, index) in otherFeatures" :key="index" class="v-card">
               <v-expansion-panel-title>
                 <template v-slot:actions>
-                  <v-icon color="indigo" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
+                  <v-icon color="secondary" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
                 </template>
                 {{ feature.title }} | {{ firstVisibleAttributes[index].value }}
               </v-expansion-panel-title>
@@ -108,6 +109,7 @@ export default {
     return {
       drawer: false,  // Initialize `drawer` to `false`
       activePanel: 0,
+      logo: require('@/assets/alcaldia-de-maracaibo-logo-web.png'), // Add your logo here
     };
   },
   methods: {
@@ -137,7 +139,7 @@ export default {
       });
     },
     title() {
-      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Atlanti';
+      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor SIT'; // Change the title of the app
     },
   },
 };
@@ -159,5 +161,10 @@ export default {
   /*white-space: -o-pre-wrap;    /* Opera 7 */
   /*word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
+
+.custom-class {
+    background: rgb(var(--v-theme-secondary));
+    color: rgba(var(--v-theme-on-bodytext), 0.9)
+  }
 
 </style>
