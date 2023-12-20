@@ -86,7 +86,7 @@
               <v-expansion-panel-text class="overflow-y-auto">
                 <div v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
                   <p><strong>{{ attribute.attribute_label }}:</strong></p>
-                  <pre class="wrap-text">{{ attribute.value }}</pre>
+                  <p class="wrap-text">{{ attribute.value }}</p>
                 </div>
               </v-expansion-panel-text>
             </v-expansion-panel>

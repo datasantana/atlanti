@@ -90,7 +90,7 @@ export default createStore({
           }
 
           // Add class="wrap-text" to every <pre> tag
-          template = template.replace(/<pre>/g, '<pre style="white-space: pre-wrap;">');
+          template = template.replace(/<pre>/g, '<pre style="white-space: pre-wrap; font-family: sans-serif">');
 
           // Set feature.featureinfo_custom_template with transformed template
           feature.featureinfo_custom_template = template;

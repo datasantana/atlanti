@@ -89,7 +89,8 @@
                                                 <v-switch class="layer-visibility" color="accent" v-model="layer.visibility" ></v-switch>
                                             </div>
                                             <div class="legend overflow-y-auto">
-                                                <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
+                                                <!--v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img-->
+                                                <v-img :src="layer.dataset.links[0].url" :width="getLegendWidth(layer.dataset.links[0].url)" contain></v-img>
                                             </div>
                                         </details>
                                     </section>
@@ -149,15 +150,15 @@ export default {
 
             },
             location: {
-                lng: -71.601944,
-                lat: 10.631667,
+                lng: -71.6930587033,
+                lat: 10.6775887114,
                 bearing: 0,
                 pitch: 0,
-                zoom: 11,
+                zoom: 11.6,
             },
             reprojectedLocation: {
-                lng: 215314.7633,
-                lat: 1176446.3765
+                lng: 205383.1024547202,
+                lat: 1181614.2195329086,
             },
             rules: [
                 value => {
@@ -166,6 +167,7 @@ export default {
                 },
             ],
             tab: null,
+            imageDimensions: {},
         };
     },
     computed: {
@@ -226,6 +228,17 @@ export default {
             const targetProjection = 'EPSG:4326';
             const [reprojectedLng, reprojectedLat] = proj4(sourceProjection, targetProjection, [parseFloat(this.reprojectedLocation.lng), parseFloat(this.reprojectedLocation.lat)]);
             this.$refs.webMap.addMarker({ lngLat: { lat: reprojectedLat, lng: reprojectedLng } });
+        },
+        getLegendWidth(url) {
+            if (this.imageDimensions[url]) {
+            return this.imageDimensions[url].width > this.imageDimensions[url].height ? '50%' : '80%';
+            } else {
+            let img = new Image();
+            img.onload = () => {
+                this.imageDimensions[url] = { width: img.width, height: img.height };
+            };
+            img.src = url;
+            }
         },
     },
 };
