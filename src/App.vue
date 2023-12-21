@@ -20,9 +20,9 @@
       </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" app width="300">
+    <!--v-navigation-drawer v-model="drawer" app width="300"-->
       <!-- Add your drawer content here -->
-      <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="tonal" max-width="450">
+      <!--v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="tonal" max-width="450">
         <v-card-item>
           <div class="text-overline mb-1">
             Title
@@ -32,9 +32,9 @@
           <v-icon left>mdi-account-circle</v-icon>
           <div class="text-h6 mb-1">Username</div>
         </v-card-title>
-        <v-card-text>
+        <v-card-text-->
           <!-- content of the panel... -->
-          <v-expansion-panels>
+          <!--v-expansion-panels>
             <v-expansion-panel class="v-card">
               <v-expansion-panel-title>
                 Saved Searches
@@ -48,7 +48,7 @@
           <v-btn to="/">Catálogo</v-btn>
         </v-card-actions>
       </v-card>
-    </v-navigation-drawer>
+    </v-navigation-drawer-->
 
     <v-navigation-drawer v-model="$store.state.secondDrawer" app location="right" width="450">
       <!-- Add your second drawer content here -->

@@ -22,53 +22,23 @@ export default {
             tracedFeatureId: null,
         };
     },
-    mounted() {
-        const { lng, lat, zoom, bearing, pitch } = this.modelValue
-
-        const map = new mapboxgl.Map({
-            container: this.$refs.mapContainer,
-            style: "mapbox://styles/mapbox/light-v11",
-            center: [lng, lat],
-            bearing,
-            pitch,
-            zoom,
-        });
-
-        // Add navigation control (the +/- zoom buttons)
-        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-        // Add wms source provided by the selected map
-        map.on('load', () => {
-            if (this.mapLayers) {
-                [...this.mapLayers].reverse().forEach((layer) => {
-                const baseUrl = 'https://mapas.alcaldiademaracaibo.org/geoserver/ows';
-                const layerName = layer.dataset.alternate;
-                const bbox = '{bbox-epsg-3857}';
-                const newUrl = `${baseUrl}?service=WMS&version=1.1.0&request=GetMap&layers=${layerName}&styles=&bbox=${bbox}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true`;
-
-                // Create variables for storing the "opacity" and "visibility" properties of each layer
-                const layerOpacity = layer.opacity;
-                const layerVisibility = layer.visibility ? 'visible' : 'none';
-
-                map.addSource(`wms-source-${layer.pk}`, {
-                'type': 'raster',
-                'tiles': [newUrl],
-                'tileSize': 256
-                });
-
-                map.addLayer({
-                    'id': `wms-layer-${layer.pk}`,
-                    'type': 'raster',
-                    'source': `wms-source-${layer.pk}`,
-                    'paint': {
-                        'raster-opacity': layerOpacity, // Use the "opacity" variable to set the opacity of the layer
-                    },
-                    'layout': {
-                        'visibility': layerVisibility, // Use the "visibility" variable to set the visibility of the layer
-                    },
-                });
-            }, { deep: true });
+    async beforeMount() {
+        // Check if mapLayers and mapDatasets are empty
+        if (this.$store.state.mapLayers.length === 0 && this.$store.state.mapDatasets.length === 0) {
+            // Fetch the default map
+            let maps = await this.$store.dispatch('fetchMaps');
+            let defaultMap = maps.find(map => map.title === "Consulta Ciudadana | Zonificación");
+            if (defaultMap) {
+                this.$store.commit('setSelectedMap', defaultMap);
+                await this.$store.dispatch('fetchDatasets');
             }
+        }
+    },
+    mounted() {
+        const map = this.initializeMap();
+
+        map.on('load', () => {
+        this.addLayersToMap(map);
         });
 
         const updateLocation = () => this.$emit('update:modelValue', this.getLocation())
@@ -161,6 +131,14 @@ export default {
             this.tracedFeatureId = null;
             }
         },
+        mapLayers: {
+            handler(newMapLayers) {
+                if (this.map && newMapLayers.length > 0) {
+                    this.addLayersToMap(this.map);
+                }
+            },
+            immediate: true,
+        },
     },
     computed: {
         ...mapState(['markedCoordinate', 'tracedFeature']),
@@ -168,6 +146,54 @@ export default {
     methods: {
         ...mapMutations(['markCoordinate']),
         ...mapActions(['fetchFeatures']), // map the fetchFeatures action
+        initializeMap() {
+            const { lng, lat, zoom, bearing, pitch } = this.modelValue
+
+            const map = new mapboxgl.Map({
+                container: this.$refs.mapContainer,
+                style: "mapbox://styles/mapbox/light-v11",
+                center: [lng, lat],
+                bearing,
+                pitch,
+                zoom,
+            });
+
+            // Add navigation control (the +/- zoom buttons)
+            map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+            return map;
+            },
+            addLayersToMap(map) {
+            if (this.mapLayers) {
+                [...this.mapLayers].reverse().forEach((layer) => {
+                this.addLayerToMap(map, layer);
+                });
+            }
+            },
+            addLayerToMap(map, layer) {
+            const baseUrl = 'https://mapas.alcaldiademaracaibo.org/geoserver/ows';
+            const layerName = layer.dataset.alternate;
+            const bbox = '{bbox-epsg-3857}';
+            const newUrl = `${baseUrl}?service=WMS&version=1.1.0&request=GetMap&layers=${layerName}&styles=&bbox=${bbox}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true`;
+
+            map.addSource(`wms-source-${layer.pk}`, {
+                'type': 'raster',
+                'tiles': [newUrl],
+                'tileSize': 256
+            });
+
+            map.addLayer({
+                'id': `wms-layer-${layer.pk}`,
+                'type': 'raster',
+                'source': `wms-source-${layer.pk}`,
+                'paint': {
+                'raster-opacity': layer.opacity
+                },
+                'layout': {
+                'visibility': layer.visibility ? 'visible' : 'none'
+                }
+            });
+        },
         getLocation() {
             return {
             ...this.map.getCenter(),

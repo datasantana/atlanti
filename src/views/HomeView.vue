@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home d-flex flex-column">
     <MapCatalog :maps="maps" />
   </div>
 </template>
@@ -27,3 +27,12 @@ export default {
   // props, data, methods...
 };
 </script>
+
+<style scoped>
+.home {
+  flex-grow: 1;
+  height: calc(100vh - 64px);
+  width: 100%;
+  position: relative;
+}
+</style>

@@ -149,6 +149,8 @@ export default createStore({
     async fetchMaps({ commit }) {
       const response = await axios.get("https://mapas.alcaldiademaracaibo.org/api/v2/maps");
       commit('setMaps', response.data.maps);
+      // Return the maps
+      return response.data.maps;
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
