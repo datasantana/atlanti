@@ -139,7 +139,7 @@ export default {
       });
     },
     title() {
-      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor SIT'; // Change the title of the app
+      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor Consulta Ciudadana'; // Change the title of the app
     },
   },
 };

@@ -212,7 +212,7 @@ export default {
             // Create a new HTML element
             let el = document.createElement('div');
             el.className = 'marker';
-            el.style.backgroundColor = '#F2BD1D'; //error color
+            el.style.backgroundColor = '#04BF55'; //accent color
             el.style.border = '2px solid white';
             el.style.borderRadius = '50%';
             el.style.width = '20px';
