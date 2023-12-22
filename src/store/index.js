@@ -1,5 +1,6 @@
 import { createStore } from 'vuex'
 import axios from 'axios';
+import * as turf from '@turf/turf';
 
 export default createStore({
   state: {
@@ -7,6 +8,7 @@ export default createStore({
     selectedMap: null,
     mapLayers: [],
     mapDatasets: [],
+    searchFeatures: [],
     secondDrawer: false,
     markedCoordinate: { lat: 0, lng: 0 },
     features: [],
@@ -143,6 +145,9 @@ export default createStore({
     resetTracedFeature(state) {
       state.tracedFeature = null;
     },
+    setSearchFeatures(state, features) {
+      state.searchFeatures = features;
+    }
     // other mutations...
   },
   actions: {
@@ -167,6 +172,31 @@ export default createStore({
         axios.get(getFeatureRequest).then(response => {
           commit('setFeatures', response.data.features);
         });
+      }
+    },
+    async fetchSearchFeatures({commit}) {
+      try {
+        const response = await axios.get('https://mapas.alcaldiademaracaibo.org/geoserver/ows', {
+          params: {
+            service: 'WFS',
+            version: '2.0.0',
+            request: 'GetFeature',
+            typeName: 'geonode:sectores_barrios_urb',
+            outputFormat: 'application/json',
+            srsName: 'EPSG:4326',
+            // Add any other parameters you need...
+          },
+        });
+    
+        const featuresWithCentroids = response.data.features.map(feature => {
+          const centroid = turf.centroid(feature);
+          return { ...feature, geometry: centroid.geometry };
+        });
+    
+        commit('setSearchFeatures', featuresWithCentroids);
+        console.log('search features in store', featuresWithCentroids);
+      } catch (error) {
+        console.error('Failed to fetch features:', error);
       }
     },
     async fetchDatasets({ commit, state }) {

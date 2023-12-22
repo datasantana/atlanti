@@ -20,10 +20,17 @@
                             <v-form>
                                 <v-row class="d-flex align-center justify-space-between">
                                     <v-col cols="10">
-                                        <v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field>
+                                        <!--v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field-->
+                                        <v-autocomplete
+                                            v-model="selectedPlace"
+                                            :items="placeNames"
+                                            label="Lugar"
+                                            item-text="comunidad"
+                                            item-value="comunidad"
+                                        ></v-autocomplete>
                                     </v-col>
                                     <v-col cols="2">
-                                        <v-btn id="search-place" size="x-small" icon="mdi-map-search" color="accent"></v-btn>
+                                        <v-btn id="search-place" size="x-small" icon="mdi-map-search" color="accent" @click="filterAndEmit"></v-btn>
                                     </v-col>
                                 </v-row>
                             </v-form>
@@ -168,10 +175,19 @@ export default {
             ],
             tab: null,
             imageDimensions: {},
+            selectedPlace: null,
         };
     },
     computed: {
-        ...mapState(['mapLayers', 'selectedMap']),
+        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures']),
+        placeNames() {
+            return this.searchFeatures.map(feature => {
+            if (typeof feature.properties.comunidad !== 'string') {
+                console.warn('Invalid comunidad property:', feature.properties.comunidad);
+            }
+            return feature.properties.comunidad;
+            });
+        },
         groupedLayers() {
             const groups = this.mapLayers.reduce((groups, layer) => {
                 if (layer.dataset && layer.dataset.category) {
@@ -240,6 +256,17 @@ export default {
             img.src = url;
             }
         },
+        filterAndEmit() {
+            const filteredFeatures = this.searchFeatures.filter(feature => feature.properties.comunidad === this.selectedPlace);
+            console.log(filteredFeatures);
+            filteredFeatures.forEach(feature => {
+                const [lng, lat] = feature.geometry.coordinates;
+                const lngLat = { lat, lng };
+                console.log(lngLat);
+                this.$refs.webMap.addMarker({ lngLat: lngLat });
+            });
+        },
+
     },
 };
 </script>

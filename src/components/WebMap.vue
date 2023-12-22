@@ -24,6 +24,7 @@ export default {
     },
     async beforeMount() {
         // Check if mapLayers and mapDatasets are empty
+        this.$store.dispatch('fetchSearchFeatures');
         if (this.$store.state.mapLayers.length === 0 && this.$store.state.mapDatasets.length === 0) {
             // Fetch the default map
             let maps = await this.$store.dispatch('fetchMaps');
