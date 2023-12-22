@@ -9,7 +9,7 @@
                         <v-card-text>
                             <p>En esta sección podrás consultar el mapa de zonificación urbana del municipio, el cual ha sido preparado por el Centro de Procesamiento Urbano (CPU) para facilitar el acceso a la información del uso del suelo a los ciudadanos.</p>
                             <v-divider></v-divider>
-                            <p class="text-caption">Para ver el mapa, haz click en el botón <strong>Ver Mapa</strong> de la tarjeta.</p>
+                            <p class="text-caption">Para ver el mapa, haz click en el botón <strong>Ver Mapa</strong> de la tarjeta a continuación.</p>
                             <!--p class="text-caption">Para ver los detalles de un mapa, haz click en el botón <v-icon color="error">mdi-information</v-icon>.</p-->
                         </v-card-text>
                     </v-card>
