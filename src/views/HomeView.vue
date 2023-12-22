@@ -1,18 +1,38 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="home d-flex flex-column">
+    <MapCatalog :maps="maps" />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import { mapState } from 'vuex';
+import MapCatalog from '@/components/MapCatalog.vue';
 
 export default {
   name: 'HomeView',
   components: {
-    HelloWorld
-  }
-}
+    MapCatalog,
+  },
+  computed: {
+    ...mapState(['maps']),
+  },
+  mounted() {
+    this.$store.dispatch('fetchMaps');
+  },
+  beforeRouteEnter(to, from, next) {
+  next(vm => {
+    vm.$store.commit('clearSelectedMap');
+  });
+},
+  // props, data, methods...
+};
 </script>
+
+<style scoped>
+.home {
+  flex-grow: 1;
+  height: calc(100vh - 64px);
+  width: 100%;
+  position: relative;
+}
+</style>

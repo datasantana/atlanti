@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import store from '../store/index.js';
 
 const routes = [
   {
@@ -28,3 +29,10 @@ const router = createRouter({
 })
 
 export default router
+
+router.beforeEach((to, from, next) => {
+  if (to.path === '/') {
+    store.commit('closeSecondDrawer');
+  }
+  next();
+});
