@@ -35,8 +35,8 @@
                                 </v-row>
                             </v-form>
                             <div class="text-caption">
-                                Latitude: {{ currentCRS === 'EPSG:2202' ? reprojectedLocation.lat.toFixed(4) : location.lat.toFixed(4) }} |
-                                Longitude: {{ currentCRS === 'EPSG:2202' ? reprojectedLocation.lng.toFixed(4) : location.lng.toFixed(4) }} |
+                                {{ labels[0] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lat) : parseFloat(location.lat) }} |
+                                {{ labels[1] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lng) : parseFloat(location.lng) }} |
                                 Zoom: {{ location.zoom.toFixed(2) }} 
                                 <template v-if="location.bearing">| Bearing: {{ location.bearing.toFixed(2) }} | </template>
                                 <template v-if="location.pitch"> Pitch: {{ location.pitch.toFixed(2) }} | </template>
@@ -45,19 +45,33 @@
                         <v-window-item value="coordinate">
                             <v-row class="d-flex align-center justify-space-between">
                                 <v-col cols="5">
-                                    <v-form @submit.prevent="reprojectAndEmit">
+                                    <v-form v-if="currentCRS === 'EPSG:2202'" @submit.prevent="reprojectAndEmit">
                                         <v-text-field
                                         v-model="reprojectedLocation.lat"
-                                        label="Latitude"
+                                        :label="labels[0]"
+                                        :rules="rules"
+                                        ></v-text-field>
+                                    </v-form>
+                                    <v-form v-if="currentCRS === 'EPSG:4326'" @submit.prevent="reprojectAndEmit">
+                                        <v-text-field
+                                        v-model="location.lat"
+                                        :label="labels[0]"
                                         :rules="rules"
                                         ></v-text-field>
                                     </v-form>
                                 </v-col>
                                 <v-col cols="5">
-                                    <v-form @submit.prevent="reprojectAndEmit">
+                                    <v-form v-if="currentCRS === 'EPSG:2202'" @submit.prevent="reprojectAndEmit">
                                         <v-text-field
                                         v-model="reprojectedLocation.lng"
-                                        label="Longitude"
+                                        :label="labels[1]"
+                                        :rules="rules"
+                                        ></v-text-field>
+                                    </v-form>
+                                    <v-form v-if="currentCRS === 'EPSG:4326'" @submit.prevent="reprojectAndEmit">
+                                        <v-text-field
+                                        v-model="location.lng"
+                                        :label="labels[1]"
                                         :rules="rules"
                                         ></v-text-field>
                                     </v-form>
@@ -117,7 +131,7 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="2">
-                            <v-btn size="small" icon="mdi-home" @click="location = { lng: -71.601944, lat: 10.631667, zoom: 11, pitch: 0, bearing: 0 }" color="accent"></v-btn>
+                            <v-btn size="small" icon="mdi-home" @click="location = { lng: -71.6930587033, lat: 10.6775887114, zoom: 11.6, pitch: 0, bearing: 0 }" color="accent"></v-btn>
                         </v-col>
                     </v-row>
                 </v-card-actions>
@@ -212,6 +226,14 @@ export default {
 
             return groups;
         },
+        labels() {
+            if (this.currentCRS === 'EPSG:2202') {
+                return ['Norte', 'Este'];
+            } else if (this.currentCRS === 'EPSG:4326') {
+                return ['Latitude', 'Longitude'];
+            }
+            return [];
+        },
     },
     mounted() {
         this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
@@ -240,10 +262,14 @@ export default {
             window.open(`${detailUrl}/metadata_detail`, '_blank');
         },
         reprojectAndEmit() {
-            const sourceProjection = 'EPSG:2202'; // adjust this value as needed
-            const targetProjection = 'EPSG:4326';
-            const [reprojectedLng, reprojectedLat] = proj4(sourceProjection, targetProjection, [parseFloat(this.reprojectedLocation.lng), parseFloat(this.reprojectedLocation.lat)]);
-            this.$refs.webMap.addMarker({ lngLat: { lat: reprojectedLat, lng: reprojectedLng } });
+            if (this.currentCRS === 'EPSG:2202') {
+                const sourceProjection = 'EPSG:2202'; // adjust this value as needed
+                const targetProjection = 'EPSG:4326';
+                const [reprojectedLng, reprojectedLat] = proj4(sourceProjection, targetProjection, [parseFloat(this.reprojectedLocation.lng), parseFloat(this.reprojectedLocation.lat)]);
+                this.$refs.webMap.addMarker({ lngLat: { lat: reprojectedLat, lng: reprojectedLng } });
+            } else {
+                this.$refs.webMap.addMarker({ lngLat: { lat: parseFloat(this.location.lat), lng: parseFloat(this.location.lng) } });
+            }
         },
         getLegendWidth(url) {
             if (this.imageDimensions[url]) {
