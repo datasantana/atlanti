@@ -59,10 +59,10 @@
         <v-divider></v-divider>
         <v-card-item>
           <div class="text-overline mb-1">
-            Norte: {{ markedCoordinate[1] }} - Este: {{ markedCoordinate[0] }}
+            Norte: {{ markedCoordinate && markedCoordinate[1] ? parseFloat(markedCoordinate[1].toFixed(2)) : 'N/A' }} - Este: {{ markedCoordinate && markedCoordinate[0] ? parseFloat(markedCoordinate[0].toFixed(2)) : 'N/A' }}
           </div>
         </v-card-item>
-        <v-card-text>
+        <v-card-text style="max-height: 80vh; overflow-y: auto;">
           <!-- content of the panel... -->
           <v-expansion-panels v-model="activePanel" v-if="specialFeature">
             <v-expansion-panel v-for="(feature, index) in specialFeature" :key="index" class="v-card">
