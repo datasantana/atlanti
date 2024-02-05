@@ -4,7 +4,7 @@
         <div ref="mapContainer" class="map-container">
             <Map v-model="location" :mapLayers="mapLayers" ref="webMap" />
         </div>
-        <div id="sidebar" class="container">
+        <div id="sidebar" class="container" style="max-height: 80vh; overflow-y: auto;">
             <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="400">
                 <v-tabs
                     v-model="tab"
@@ -35,8 +35,8 @@
                                 </v-row>
                             </v-form>
                             <div class="text-caption">
-                                {{ labels[0] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lat) : parseFloat(location.lat) }} |
-                                {{ labels[1] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lng) : parseFloat(location.lng) }} |
+                                {{ labels[0] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lat.toFixed(2)) : parseFloat(location.lat.toFixed(2)) }} |
+                                {{ labels[1] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lng.toFixed(2)) : parseFloat(location.lng.toFixed(2)) }} |
                                 Zoom: {{ location.zoom.toFixed(2) }} 
                                 <template v-if="location.bearing">| Bearing: {{ location.bearing.toFixed(2) }} | </template>
                                 <template v-if="location.pitch"> Pitch: {{ location.pitch.toFixed(2) }} | </template>
@@ -94,7 +94,7 @@
                         </v-col>
                     </v-row>
                 </v-card-title>
-                <v-card-text>
+                <v-card-text style="max-height: 400px; overflow-y: auto;">
                     <!--Layers panel-->
                     <v-expansion-panels>
                         <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
@@ -210,6 +210,8 @@ export default {
                         category = 'Límites';
                     } else if (layer.dataset.category.identifier === 'planningCadastre') {
                         category = 'Ordenamiento';
+                    } else if (layer.dataset.category.identifier === 'transportation') {
+                        category = 'Transporte';
                     } else {
                         category = layer.dataset.category.identifier;
                     }

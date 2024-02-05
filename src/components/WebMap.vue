@@ -9,6 +9,7 @@ mapboxgl.accessToken = "pk.eyJ1IjoiZ2Vvc3R1ZGlvIiwiYSI6ImNrNWk5Mmp5eDBjNHQzbW10M
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { mapMutations, mapActions, mapState } from 'vuex';
 import proj4 from 'proj4';
+import * as turf from '@turf/turf';
 
 export default {
     name: "WebMap",
@@ -118,6 +119,11 @@ export default {
                     'line-width': 3, // adjust this value as needed
                 },
                 });
+                // Calculate the bounding box of the new feature
+                const bbox = turf.bbox(newFeature);
+
+                // Adjust the map view to fit the bounding box
+                this.map.fitBounds(bbox, { padding: 20 });
 
             } catch (error) {
                 console.error('Failed to add feature to map:', error);
@@ -212,8 +218,8 @@ export default {
             // Create a new HTML element
             let el = document.createElement('div');
             el.className = 'marker';
-            el.style.backgroundColor = '#04BF55'; //accent color
-            el.style.border = '2px solid white';
+            el.style.backgroundColor = '#404040'; //dark color
+            el.style.border = '3px solid white';
             el.style.borderRadius = '50%';
             el.style.width = '20px';
             el.style.height = '20px';
@@ -223,8 +229,11 @@ export default {
                 .setLngLat(e.lngLat)
                 .addTo(this.map);
 
+            // Perform the fly-to action to the new marker location with a zoom level of 18
+            this.map.flyTo({ center: e.lngLat, zoom: 18 });
+
             // Set the new marker as the map center
-            this.map.setCenter(e.lngLat);
+            //this.map.setCenter(e.lngLat);
 
             const coordinate = { lat: e.lngLat.lat, lng: e.lngLat.lng };
             const sourceProjection = 'EPSG:4326'; // replace with your source projection
@@ -249,4 +258,28 @@ export default {
     width: 100vw;
 }
 
+@keyframes pulse {
+    0% {
+        transform: scale(0.1, 0.1);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(6, 6);
+        opacity: 0;
+    }
+}
+
+.marker::after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    animation: pulse 2s infinite;
+}
 </style>
