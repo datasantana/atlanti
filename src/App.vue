@@ -59,7 +59,7 @@
         <v-divider></v-divider>
         <v-card-item>
           <div class="text-overline mb-1">
-            lat: {{ markedCoordinate[1] }} - lng: {{ markedCoordinate[0] }}
+            Norte: {{ markedCoordinate[1] }} - Este: {{ markedCoordinate[0] }}
           </div>
         </v-card-item>
         <v-card-text>
