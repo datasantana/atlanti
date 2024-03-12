@@ -29,7 +29,7 @@ export default {
         if (this.$store.state.mapLayers.length === 0 && this.$store.state.mapDatasets.length === 0) {
             // Fetch the default map
             let maps = await this.$store.dispatch('fetchMaps');
-            let defaultMap = maps.find(map => map.title === "Consulta Ciudadana | Zonificación");
+            let defaultMap = maps.find(map => map.title === "Zonificación Urbana de Maracaibo");
             if (defaultMap) {
                 this.$store.commit('setSelectedMap', defaultMap);
                 await this.$store.dispatch('fetchDatasets');
