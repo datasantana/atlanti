@@ -211,7 +211,7 @@ export default {
                     } else if (layer.dataset.category.identifier === 'planningCadastre') {
                         category = 'Ordenamiento';
                     } else if (layer.dataset.category.identifier === 'transportation') {
-                        category = 'Transporte';
+                        category = 'Vías';
                     } else {
                         category = layer.dataset.category.identifier;
                     }
