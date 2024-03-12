@@ -35,7 +35,7 @@
                         <!-- card content... -->
                         <v-divider></v-divider>
                         <v-card-actions class="d-flex justify-space-between">
-                            <v-btn color="accent" @click="goToMapView(map.pk)">¡Ver mapa!</v-btn>
+                            <v-btn color="accent" @click="goToMapView(map.pk)">Ver mapa</v-btn>
                             <v-btn icon @click="openDetails(map.detail_url)">
                                 <v-icon color="error">mdi-information</v-icon>
                             </v-btn>
