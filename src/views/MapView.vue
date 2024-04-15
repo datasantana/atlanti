@@ -96,7 +96,7 @@
                                         ></v-autocomplete>
                                     </v-col>
                                     <v-col cols="2">
-                                        <v-btn id="search-place" size="x-small" icon="mdi-map-search" color="accent" @click="filterZoneAndEmit"></v-btn>
+                                        <v-btn id="search-zone" size="x-small" icon="mdi-filter" color="accent" @click="filterZoneAndEmit"></v-btn>
                                     </v-col>
                                 </v-row>
                             </v-form>
@@ -340,6 +340,15 @@ export default {
         filterZoneAndEmit() {
             const filteredFeatures = this.filterFeatures.filter(feature => feature.properties.nombre_zona === this.selectedZone);
             console.log(filteredFeatures);
+
+            if (filteredFeatures && filteredFeatures.length > 0) {
+                const mergedGeometry = {
+                    type: "GeometryCollection",
+                    geometries: filteredFeatures.map(feature => feature.geometry)
+                };
+
+                this.$store.dispatch('traceFeature', mergedGeometry);
+            }
             /*filteredFeatures.forEach(feature => {
                 const [lng, lat] = feature.geometry.coordinates;
                 const lngLat = { lat, lng };
