@@ -13,6 +13,7 @@
                 >
                     <v-tab value="place">Buscar lugar</v-tab>
                     <v-tab value="coordinate">Buscar coordenada</v-tab>
+                    <v-tab value="zone">Buscar zona</v-tab>
                 </v-tabs>
                 <v-card-text>
                     <v-window v-model="tab">
@@ -80,6 +81,25 @@
                                     <v-btn id="search-coordinate" size="x-small" icon="mdi-crosshairs-question" color="accent" @click="reprojectAndEmit"></v-btn>
                                 </v-col>
                             </v-row>
+                        </v-window-item>
+                        <v-window-item value="zone">
+                            <v-form>
+                                <v-row class="d-flex align-center justify-space-between">
+                                    <v-col cols="10">
+                                        <!--v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field-->
+                                        <v-autocomplete
+                                            v-model="selectedZone"
+                                            :items="zoneNames"
+                                            label="Seleccione zona"
+                                            item-title="name"
+                                            item-value="value"
+                                        ></v-autocomplete>
+                                    </v-col>
+                                    <v-col cols="2">
+                                        <v-btn id="search-place" size="x-small" icon="mdi-map-search" color="accent" @click="filterZoneAndEmit"></v-btn>
+                                    </v-col>
+                                </v-row>
+                            </v-form>
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -190,17 +210,36 @@ export default {
             tab: null,
             imageDimensions: {},
             selectedPlace: null,
+            selectedZone: null,
         };
     },
     computed: {
-        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures']),
+        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets']),
         placeNames() {
             return this.searchFeatures.map(feature => {
-            if (typeof feature.properties.nombre !== 'string') {
-                console.warn('Invalid nombre property:', feature.properties.nombre);
+            if (typeof feature.properties.comunidad !== 'string') {
+                console.warn('Invalid comunidad property:', feature.properties.comunidad);
             }
-            return feature.properties.nombre;
+            //console.log(feature.properties.comunidad);
+            return feature.properties.comunidad;
             });
+        },
+        zoneNames() {
+            const zones = [];
+
+            if (this.filterFeatures && this.filterFeatures.length > 0) {
+                const uniqueZones = this.filterFeatures
+                    .map(feature => feature.properties.nombre_zona) // extract nombre_zona
+                    .filter((value, index, self) => value && self.indexOf(value) === index); // filter out nulls and duplicates
+
+                uniqueZones.forEach(zone => {
+                    zones.push({
+                        name: zone,
+                        value: zone
+                    });
+                });
+            }
+            return zones;
         },
         groupedLayers() {
             const groups = this.mapLayers.reduce((groups, layer) => {
@@ -297,6 +336,16 @@ export default {
                 console.log(lngLat);
                 this.$refs.webMap.addMarker({ lngLat: lngLat });
             });
+        },
+        filterZoneAndEmit() {
+            const filteredFeatures = this.filterFeatures.filter(feature => feature.properties.nombre_zona === this.selectedZone);
+            console.log(filteredFeatures);
+            /*filteredFeatures.forEach(feature => {
+                const [lng, lat] = feature.geometry.coordinates;
+                const lngLat = { lat, lng };
+                console.log(lngLat);
+                this.$refs.webMap.addMarker({ lngLat: lngLat });
+            });*/
         },
 
     },

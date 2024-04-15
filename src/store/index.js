@@ -12,6 +12,7 @@ export default createStore({
     mapLayers: [],
     mapDatasets: [],
     searchFeatures: [],
+    filterFeatures: [],
     secondDrawer: false,
     markedCoordinate: { lat: 0, lng: 0 },
     features: [],
@@ -153,7 +154,10 @@ export default createStore({
     },
     setSearchFeatures(state, features) {
       state.searchFeatures = features;
-    }
+    },
+    setFilterFeatures(state, features) {
+      state.filterFeatures = features;
+    },
     // other mutations...
   },
   actions: {
@@ -190,7 +194,7 @@ export default createStore({
             service: 'WFS',
             version: '2.0.0',
             request: 'GetFeature',
-            typeName: 'geonode:juntas_vecinos',
+            typeName: 'geonode:sectores_barrios_urb',
             outputFormat: 'application/json',
             srsName: 'EPSG:4326',
             // Add any other parameters you need...
@@ -204,6 +208,27 @@ export default createStore({
     
         commit('setSearchFeatures', featuresWithCentroids);
         console.log('search features in store', featuresWithCentroids);
+      } catch (error) {
+        console.error('Failed to fetch features:', error);
+      }
+    },
+    async fetchFilterFeatures({commit}) {
+      try {
+        const wfsUrl = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
+        const response = await axios.get(wfsUrl, {
+          params: {
+            service: 'WFS',
+            version: '2.0.0',
+            request: 'GetFeature',
+            typeName: 'maracaibo:zonifica_ordenanza',
+            outputFormat: 'application/json',
+            srsName: 'EPSG:4326',
+            // Add any other parameters you need...
+          },
+        });
+    
+        commit('setFilterFeatures', response.data.features);
+        console.log('filter features in store', response.data.features);
       } catch (error) {
         console.error('Failed to fetch features:', error);
       }
