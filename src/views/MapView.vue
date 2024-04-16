@@ -255,11 +255,7 @@ export default {
                     } else if (layer.dataset.category.identifier === 'planningCadastre') {
                         category = 'Ordenamiento';
                     } else if (layer.dataset.category.identifier === 'transportation') {
-                        category = 'Transporte';
-                    } else if (layer.dataset.category.identifier === 'structure') {
-                        category = 'Estructura Urbana';
-                    } else if (layer.dataset.category.identifier === 'location') {
-                        category = 'Lugares';
+                        category = 'Vías';
                     } else {
                         category = layer.dataset.category.identifier;
                     }
