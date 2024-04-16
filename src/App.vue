@@ -70,7 +70,7 @@
                 <template v-slot:actions>
                   <v-icon color="accent" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
                 </template>
-                {{ feature.title }} | {{ feature.properties.attribute_set[0].value }}
+                {{ feature.title }} | 
               </v-expansion-panel-title>
               <v-expansion-panel-text class="overflow-y-auto" >
                 <div class="wrap-text" v-html="feature.featureinfo_custom_template"></div>
