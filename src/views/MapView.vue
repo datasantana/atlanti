@@ -5,14 +5,15 @@
             <Map v-model="location" :mapLayers="mapLayers" ref="webMap" />
         </div>
         <div id="sidebar" class="container" style="max-height: 80vh; overflow-y: auto;">
-            <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="400">
+            <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="450">
                 <v-tabs
                     v-model="tab"
                     bg-color="primary"
                     align-tabs="center"
                 >
-                    <v-tab value="place">Buscar lugar</v-tab>
-                    <v-tab value="coordinate">Buscar coordenada</v-tab>
+                    <v-tab value="zone">Zonificación</v-tab>
+                    <v-tab value="place">Lugar</v-tab>
+                    <v-tab value="coordinate">Coordenada</v-tab>
                 </v-tabs>
                 <v-card-text>
                     <v-window v-model="tab">
@@ -24,9 +25,9 @@
                                         <v-autocomplete
                                             v-model="selectedPlace"
                                             :items="placeNames"
-                                            label="Lugar"
-                                            item-text="comunidad"
-                                            item-value="comunidad"
+                                            label="Buscar lugar"
+                                            item-text="nombre"
+                                            item-value="nombre"
                                         ></v-autocomplete>
                                     </v-col>
                                     <v-col cols="2">
@@ -80,6 +81,25 @@
                                     <v-btn id="search-coordinate" size="x-small" icon="mdi-crosshairs-question" color="accent" @click="reprojectAndEmit"></v-btn>
                                 </v-col>
                             </v-row>
+                        </v-window-item>
+                        <v-window-item value="zone">
+                            <v-form>
+                                <v-row class="d-flex align-center justify-space-between">
+                                    <v-col cols="10">
+                                        <!--v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field-->
+                                        <v-autocomplete
+                                            v-model="selectedZone"
+                                            :items="zoneNames"
+                                            label="Buscar Zona"
+                                            item-title="name"
+                                            item-value="value"
+                                        ></v-autocomplete>
+                                    </v-col>
+                                    <v-col cols="2">
+                                        <v-btn id="search-zone" size="x-small" icon="mdi-filter" color="accent" @click="filterZoneAndEmit"></v-btn>
+                                    </v-col>
+                                </v-row>
+                            </v-form>
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -190,17 +210,41 @@ export default {
             tab: null,
             imageDimensions: {},
             selectedPlace: null,
+            selectedZone: null,
         };
     },
     computed: {
-        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures']),
+        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets']),
         placeNames() {
             return this.searchFeatures.map(feature => {
             if (typeof feature.properties.comunidad !== 'string') {
                 console.warn('Invalid comunidad property:', feature.properties.comunidad);
             }
+            //console.log(feature.properties.comunidad);
             return feature.properties.comunidad;
             });
+        },
+        zoneNames() {
+            const zones = [];
+
+            if (this.filterFeatures && this.filterFeatures.length > 0) {
+                const uniqueZones = this.filterFeatures
+                    .map(feature => {
+                        if (feature.properties.nombre_zona && feature.properties.zona) {
+                            return {
+                                name: `${feature.properties.nombre_zona} - ${feature.properties.zona}`,
+                                value: feature.properties.nombre_zona
+                            };
+                        }
+                        return null;
+                    }) // map to object with name and value properties
+                    .filter((value, index, self) => value && self.findIndex(v => v.name === value.name && v.value === value.value) === index); // filter out nulls and duplicates
+
+                uniqueZones.forEach(zone => {
+                    zones.push(zone);
+                });
+            }
+            return zones;
         },
         groupedLayers() {
             const groups = this.mapLayers.reduce((groups, layer) => {
@@ -285,7 +329,7 @@ export default {
             }
         },
         filterAndEmit() {
-            const filteredFeatures = this.searchFeatures.filter(feature => feature.properties.comunidad === this.selectedPlace);
+            const filteredFeatures = this.searchFeatures.filter(feature => feature.properties.nombre === this.selectedPlace);
             console.log(filteredFeatures);
             filteredFeatures.forEach(feature => {
                 const [lng, lat] = feature.geometry.coordinates;
@@ -293,6 +337,19 @@ export default {
                 console.log(lngLat);
                 this.$refs.webMap.addMarker({ lngLat: lngLat });
             });
+        },
+        filterZoneAndEmit() {
+            const filteredFeatures = this.filterFeatures.filter(feature => feature.properties.nombre_zona === this.selectedZone);
+            console.log(filteredFeatures);
+
+            if (filteredFeatures && filteredFeatures.length > 0) {
+                const mergedGeometry = {
+                    type: "GeometryCollection",
+                    geometries: filteredFeatures.map(feature => feature.geometry)
+                };
+
+                this.$store.dispatch('traceFeature', mergedGeometry);
+            }
         },
 
     },
