@@ -5,15 +5,15 @@
             <Map v-model="location" :mapLayers="mapLayers" ref="webMap" />
         </div>
         <div id="sidebar" class="container" style="max-height: 80vh; overflow-y: auto;">
-            <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="400">
+            <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="450">
                 <v-tabs
                     v-model="tab"
                     bg-color="primary"
                     align-tabs="center"
                 >
-                    <v-tab value="place">Buscar lugar</v-tab>
-                    <v-tab value="coordinate">Buscar coordenada</v-tab>
-                    <v-tab value="zone">Buscar zona</v-tab>
+                    <v-tab value="zone">Zonificación</v-tab>
+                    <v-tab value="place">Lugar</v-tab>
+                    <v-tab value="coordinate">Coordenada</v-tab>
                 </v-tabs>
                 <v-card-text>
                     <v-window v-model="tab">
@@ -25,7 +25,7 @@
                                         <v-autocomplete
                                             v-model="selectedPlace"
                                             :items="placeNames"
-                                            label="Lugar"
+                                            label="Buscar lugar"
                                             item-text="nombre"
                                             item-value="nombre"
                                         ></v-autocomplete>
@@ -90,7 +90,7 @@
                                         <v-autocomplete
                                             v-model="selectedZone"
                                             :items="zoneNames"
-                                            label="Seleccione zona"
+                                            label="Buscar Zona"
                                             item-title="name"
                                             item-value="value"
                                         ></v-autocomplete>
@@ -229,14 +229,19 @@ export default {
 
             if (this.filterFeatures && this.filterFeatures.length > 0) {
                 const uniqueZones = this.filterFeatures
-                    .map(feature => feature.properties.nombre_zona) // extract nombre_zona
-                    .filter((value, index, self) => value && self.indexOf(value) === index); // filter out nulls and duplicates
+                    .map(feature => {
+                        if (feature.properties.nombre_zona && feature.properties.zona) {
+                            return {
+                                name: `${feature.properties.nombre_zona} - ${feature.properties.zona}`,
+                                value: feature.properties.nombre_zona
+                            };
+                        }
+                        return null;
+                    }) // map to object with name and value properties
+                    .filter((value, index, self) => value && self.findIndex(v => v.name === value.name && v.value === value.value) === index); // filter out nulls and duplicates
 
                 uniqueZones.forEach(zone => {
-                    zones.push({
-                        name: zone,
-                        value: zone
-                    });
+                    zones.push(zone);
                 });
             }
             return zones;
@@ -349,12 +354,6 @@ export default {
 
                 this.$store.dispatch('traceFeature', mergedGeometry);
             }
-            /*filteredFeatures.forEach(feature => {
-                const [lng, lat] = feature.geometry.coordinates;
-                const lngLat = { lat, lng };
-                console.log(lngLat);
-                this.$refs.webMap.addMarker({ lngLat: lngLat });
-            });*/
         },
 
     },
