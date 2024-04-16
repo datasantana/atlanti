@@ -5,7 +5,7 @@
 
 <script>
 import mapboxgl from "mapbox-gl";
-mapboxgl.accessToken = "pk.eyJ1IjoiZ2Vvc3R1ZGlvIiwiYSI6ImNrNWk5Mmp5eDBjNHQzbW10M3d6NzI1Y28ifQ.MPmtingHT1zi_Wk5ZxW8wA"
+mapboxgl.accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { mapMutations, mapActions, mapState } from 'vuex';
 import proj4 from 'proj4';
@@ -26,6 +26,7 @@ export default {
     async beforeMount() {
         // Check if mapLayers and mapDatasets are empty
         this.$store.dispatch('fetchSearchFeatures');
+        this.$store.dispatch('fetchFilterFeatures');
         if (this.$store.state.mapLayers.length === 0 && this.$store.state.mapDatasets.length === 0) {
             // Fetch the default map
             let maps = await this.$store.dispatch('fetchMaps');
@@ -158,7 +159,7 @@ export default {
 
             const map = new mapboxgl.Map({
                 container: this.$refs.mapContainer,
-                style: "mapbox://styles/mapbox/light-v11",
+                style: process.env.VUE_APP_DEFAULT_MAP_STYLE,
                 center: [lng, lat],
                 bearing,
                 pitch,
@@ -178,7 +179,7 @@ export default {
             }
             },
             addLayerToMap(map, layer) {
-            const baseUrl = 'https://mapas.alcaldiademaracaibo.org/geoserver/ows';
+            const baseUrl = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
             const layerName = layer.dataset.alternate;
             const bbox = '{bbox-epsg-3857}';
             const newUrl = `${baseUrl}?service=WMS&version=1.1.0&request=GetMap&layers=${layerName}&styles=&bbox=${bbox}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true`;
