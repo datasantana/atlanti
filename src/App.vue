@@ -8,7 +8,7 @@
       </template-->
       <!-- Add your logo here -->
       <v-img :src="logo" max-height="35" max-width="150" class="mr-0"></v-img>
-      <v-toolbar-title color="accent">{{ title }}</v-toolbar-title>
+      <v-toolbar-title color="accent" class="text-uppercase">{{ title }} <strong>| Alcaldía de Maracaibo</strong></v-toolbar-title>
 
       <!-- Add spacer to push content to the right -->
       <v-spacer></v-spacer>
@@ -139,7 +139,7 @@ export default {
       });
     },
     title() {
-      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor Consulta Ciudadana'; // Change the title of the app
+      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor Geográfico'; // Change the title of the app
     },
   },
 };
@@ -167,4 +167,16 @@ export default {
     color: rgba(var(--v-theme-on-bodytext), 0.9)
   }
 
+.v-toolbar-title{
+  font-size: 1rem;
+}
+</style>
+<style>
+.v-card-title{
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+.v-card--variant-outlined{
+  border-color: #025939 !important;
+}
 </style>
