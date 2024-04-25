@@ -53,9 +53,6 @@ export default createStore({
     setMapDatasets(state, datasets) {
       state.mapDatasets = datasets;
     },
-    setLayerOpacity(state, { layerIndex, opacity }) {
-      state.mapLayers[layerIndex].opacity = opacity;
-    },
     openSecondDrawer(state) {
       state.secondDrawer = true;
     },
