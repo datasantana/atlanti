@@ -13,7 +13,6 @@ import { mapState } from 'vuex';
 
 export default {
     name: "OlMap",
-    props: ["modelValue"],
     data() {
         return {
             map: null
@@ -35,7 +34,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['mapLayers']),
+        ...mapState(['mapLayers', 'mapLocation']),
         sortedMapLayers() {
             return [...this.mapLayers].sort((a, b) => a.order - b.order);
         }
@@ -57,7 +56,7 @@ export default {
     methods: {
         initMap() {
             try {
-                const { lng, lat, zoom } = this.modelValue
+                const { lng, lat, zoom } = this.mapLocation;
 
                 // Create a TileLayer for each layer in sortedMapLayers
                 const wmsLayers = this.sortedMapLayers.map(layer => new TileLayer({
@@ -114,6 +113,12 @@ export default {
     },
     mounted() {
         this.initMap();
+        this.map.on('moveend', () => {
+            let center = this.map.getView().getCenter();
+            const zoom = this.map.getView().getZoom();
+            this.$store.commit('setMapCenter', center);
+            this.$store.commit('setMapZoom', zoom);
+        });
     },
 }
 </script>

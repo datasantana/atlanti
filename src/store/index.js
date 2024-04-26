@@ -3,10 +3,20 @@ import axios from 'axios';
 //axios.defaults.baseURL = process.env.VUE_APP_NODE_URL;
 //axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
+import { toLonLat } from 'ol/proj';
+
 import * as turf from '@turf/turf';
+//import { set } from 'core-js/core/dict';
 
 export default createStore({
   state: {
+    mapLocation: {
+      lng: -71.6930587033,
+      lat: 10.6775887114,
+      bearing: 0,
+      pitch: 0,
+      zoom: 11.6,
+    },
     maps: [],
     selectedMap: null,
     mapLayers: [],
@@ -46,6 +56,15 @@ export default createStore({
     },
     clearSelectedMap(state) {
       state.selectedMap = null;
+    },
+    setMapCenter(state, center) {
+      // Reproject the center from EPSG:3857 to EPSG:4326
+      center = toLonLat(center);
+      state.mapLocation.lng = center[0];
+      state.mapLocation.lat = center[1];
+    },
+    setMapZoom(state, zoom) {
+      state.mapLocation.zoom = zoom;
     },
     setMapLayers(state, mapLayers) {
       state.mapLayers = mapLayers;

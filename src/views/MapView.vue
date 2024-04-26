@@ -6,7 +6,7 @@
         </div>
         <!-- Map container -->
         <div ref="mapContainer" class="map-container">
-            <Map v-model="location" ref="webMap" />
+            <Map ref="webMap" />
         </div>
     </div>
 </template>
@@ -31,17 +31,6 @@ export default {
                 // map name fetched from GeoNode API
                 map: 'Ordenanza de Zonificación Urbana',
 
-            },
-            location: {
-                lng: -71.6930587033,
-                lat: 10.6775887114,
-                bearing: 0,
-                pitch: 0,
-                zoom: 11.6,
-            },
-            reprojectedLocation: {
-                lng: 205383.1024547202,
-                lat: 1181614.2195329086,
             },
         };
     },

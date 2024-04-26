@@ -12,6 +12,25 @@
             </v-tabs>
             <v-card-text>
                 <v-window v-model="tab">
+                    <v-window-item value="zone">
+                        <v-form>
+                            <v-row class="d-flex align-center justify-space-between">
+                                <v-col cols="10">
+                                    <!--v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field-->
+                                    <v-autocomplete
+                                        v-model="selectedZone"
+                                        :items="zoneNames"
+                                        label="Buscar Zona"
+                                        item-title="name"
+                                        item-value="value"
+                                    ></v-autocomplete>
+                                </v-col>
+                                <v-col cols="2">
+                                    <v-btn id="search-zone" size="x-small" icon="mdi-filter" color="accent" @click="filterZoneAndEmit"></v-btn>
+                                </v-col>
+                            </v-row>
+                        </v-form>
+                    </v-window-item>
                     <v-window-item value="place">
                         <v-form>
                             <v-row class="d-flex align-center justify-space-between">
@@ -31,11 +50,11 @@
                             </v-row>
                         </v-form>
                         <div class="text-caption">
-                            {{ labels[0] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lat.toFixed(2)) : parseFloat(location.lat.toFixed(2)) }} |
-                            {{ labels[1] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation.lng.toFixed(2)) : parseFloat(location.lng.toFixed(2)) }} |
-                            Zoom: {{ location.zoom.toFixed(2) }} 
-                            <template v-if="location.bearing">| Bearing: {{ location.bearing.toFixed(2) }} | </template>
-                            <template v-if="location.pitch"> Pitch: {{ location.pitch.toFixed(2) }} | </template>
+                            {{ labels[0] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation2202.lat.toFixed(2)) : parseFloat(mapLocation.lat.toFixed(2)) }} |
+                            {{ labels[1] }}: {{ currentCRS === 'EPSG:2202' ? parseFloat(reprojectedLocation2202.lng.toFixed(2)) : parseFloat(mapLocation.lng.toFixed(2)) }} |
+                            Zoom: {{ mapLocation.zoom.toFixed(2) }} 
+                            <template v-if="mapLocation.bearing">| Bearing: {{ mapLocation.bearing.toFixed(2) }} | </template>
+                            <template v-if="mapLocation.pitch"> Pitch: {{ mapLocation.pitch.toFixed(2) }} | </template>
                         </div>
                     </v-window-item>
                     <v-window-item value="coordinate">
@@ -43,14 +62,14 @@
                             <v-col cols="5">
                                 <v-form v-if="currentCRS === 'EPSG:2202'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="reprojectedLocation.lat"
+                                    v-model="reprojectedLocation2202.lat"
                                     :label="labels[0]"
                                     :rules="rules"
                                     ></v-text-field>
                                 </v-form>
                                 <v-form v-if="currentCRS === 'EPSG:4326'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="location.lat"
+                                    v-model="mapLocation.lat"
                                     :label="labels[0]"
                                     :rules="rules"
                                     ></v-text-field>
@@ -59,14 +78,14 @@
                             <v-col cols="5">
                                 <v-form v-if="currentCRS === 'EPSG:2202'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="reprojectedLocation.lng"
+                                    v-model="reprojectedLocation2202.lng"
                                     :label="labels[1]"
                                     :rules="rules"
                                     ></v-text-field>
                                 </v-form>
                                 <v-form v-if="currentCRS === 'EPSG:4326'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="location.lng"
+                                    v-model="mapLocation.lng"
                                     :label="labels[1]"
                                     :rules="rules"
                                     ></v-text-field>
@@ -76,25 +95,6 @@
                                 <v-btn id="search-coordinate" size="x-small" icon="mdi-crosshairs-question" color="accent" @click="reprojectAndEmit"></v-btn>
                             </v-col>
                         </v-row>
-                    </v-window-item>
-                    <v-window-item value="zone">
-                        <v-form>
-                            <v-row class="d-flex align-center justify-space-between">
-                                <v-col cols="10">
-                                    <!--v-text-field label="Lugar" prepend-icon="mdi-map-marker"></v-text-field-->
-                                    <v-autocomplete
-                                        v-model="selectedZone"
-                                        :items="zoneNames"
-                                        label="Buscar Zona"
-                                        item-title="name"
-                                        item-value="value"
-                                    ></v-autocomplete>
-                                </v-col>
-                                <v-col cols="2">
-                                    <v-btn id="search-zone" size="x-small" icon="mdi-filter" color="accent" @click="filterZoneAndEmit"></v-btn>
-                                </v-col>
-                            </v-row>
-                        </v-form>
                     </v-window-item>
                 </v-window>
             </v-card-text>
@@ -158,11 +158,19 @@
 import proj4 from 'proj4';
 import { mapState } from 'vuex';
 
+// Define the source and destination projections
+const sourceProjection4326 = 'EPSG:4326';
+const destinationProjection2202 = 'EPSG:2202';
+
+// Define the custom EPSG:2202 projection
+proj4.defs(destinationProjection2202, "+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+
+// Create proj4 converters
+const converter4326to2202 = proj4(sourceProjection4326, destinationProjection2202);
+
 export default {
     name: 'LayersPanel',
     data() {
-        // Define the EPSG:2202 projection
-        proj4.defs("EPSG:2202", "+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
         return {
             currentCRS: 'EPSG:2202',
             items: [
@@ -178,17 +186,6 @@ export default {
                 map: 'Ordenanza de Zonificación Urbana',
 
             },
-            location: {
-                lng: -71.6930587033,
-                lat: 10.6775887114,
-                bearing: 0,
-                pitch: 0,
-                zoom: 11.6,
-            },
-            reprojectedLocation: {
-                lng: 205383.1024547202,
-                lat: 1181614.2195329086,
-            },
             rules: [
                 value => {
                     if (value) return true
@@ -202,7 +199,14 @@ export default {
         };
     },
     computed: {
-        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets']),
+        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
+        reprojectedLocation2202() {
+            if (this.mapLocation && this.mapLocation.lng && this.mapLocation.lat) {
+                const [lng2202, lat2202] = converter4326to2202.forward([this.mapLocation.lng, this.mapLocation.lat]);
+                return { lng: lng2202, lat: lat2202 };
+            }
+            return null;
+        },
         placeNames() {
             return this.searchFeatures.map(feature => {
             if (typeof feature.properties.comunidad !== 'string') {
@@ -276,13 +280,6 @@ export default {
     mounted() {
         this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
     },
-    watch: {
-        location(newLocation) {
-            // Reproject the coordinates to EPSG:2202 whenever the location changes
-            const [lng, lat] = proj4('EPSG:4326', 'EPSG:2202', [newLocation.lng, newLocation.lat]);
-            this.reprojectedLocation = { lng, lat };
-        },
-    },
     methods: {
         itemProps(item) {
             return {
@@ -292,9 +289,16 @@ export default {
         },
         switchCRS(crs) {
             this.currentCRS = crs;
-            const convertedLocation = proj4(this.crs['EPSG:4326'], this.crs[this.currentCRS], [this.location.lng, this.location.lat]);
-            this.location.lng = convertedLocation[0];
-            this.location.lat = convertedLocation[1];
+            let convertedLocation;
+            if (this.currentCRS === 'EPSG:2202') {
+                const [lng2202, lat2202] = converter4326to2202.forward([this.location.lng, this.location.lat]);
+                convertedLocation = { lng: lng2202, lat: lat2202 };
+            } else if (this.currentCRS === 'EPSG:4326') {
+                const [lng4326, lat4326] = location.forward([this.location.lng, this.location.lat]);
+                convertedLocation = { lng: lng4326, lat: lat4326 };
+            }
+            this.location.lng = convertedLocation.lng;
+            this.location.lat = convertedLocation.lat;
         },
         openDetails(detailUrl) {
             window.open(`${detailUrl}/metadata_detail`, '_blank');
