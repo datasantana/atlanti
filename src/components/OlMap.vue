@@ -7,9 +7,26 @@ import { Map, View } from 'ol'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
 import TileWMS from 'ol/source/TileWMS';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, toLonLat } from 'ol/proj';
+import proj4 from 'proj4';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import VectorSource from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector';
+import { Style, Icon } from 'ol/style';
+import mark from '@/assets/icons8-circle-24.png';
 
-import { mapState } from 'vuex';
+import { mapState, mapMutations, mapActions } from 'vuex';
+
+// Define the source and destination projections
+const sourceProjection4326 = 'EPSG:4326';
+const destinationProjection2202 = 'EPSG:2202';
+
+// Define the custom EPSG:2202 projection
+proj4.defs(destinationProjection2202, "+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+
+// Create proj4 converters
+const converter4326to2202 = proj4(sourceProjection4326, destinationProjection2202);
 
 export default {
     name: "OlMap",
@@ -34,7 +51,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['mapLayers', 'mapLocation']),
+        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate']),
         sortedMapLayers() {
             return [...this.mapLayers].sort((a, b) => a.order - b.order);
         }
@@ -54,6 +71,8 @@ export default {
         }
     },
     methods: {
+        ...mapMutations(['setMarkedCoordinate', 'openSecondDrawer']),
+        ...mapActions(['fetchFeatures']),
         initMap() {
             try {
                 const { lng, lat, zoom } = this.mapLocation;
@@ -88,7 +107,55 @@ export default {
                         center: fromLonLat([lng, lat]),
                         zoom: zoom
                     })
-                })
+                });
+
+                // Create a vector source and add it to a vector layer
+                const vectorSource = new VectorSource();
+                const vectorLayer = new VectorLayer({
+                    source: vectorSource,
+                    style: new Style({
+                        image: new Icon({
+                            anchor: [0.5, 0.5], // Adjust these values as needed
+                            anchorXUnits: 'fraction',
+                            anchorYUnits: 'fraction',
+                            src: mark
+                        })
+                    })
+                });
+
+                // Add the vector layer to the map
+                this.map.addLayer(vectorLayer);
+
+                // Add a click event listener to the map
+                this.map.on('click', (event) => {
+                    // Clear the vector source
+                    vectorSource.clear();
+                    
+                    // Create a new feature with a point geometry at the clicked coordinates
+                    const feature = new Feature({
+                        geometry: new Point(event.coordinate)
+                    });
+
+                    // Add the feature to the vector source
+                    vectorSource.addFeature(feature);
+
+                    // Convert the clicked coordinate to longitude/latitude and then to EPSG:2202
+                    const lonLat = toLonLat(event.coordinate);
+                    const coord = converter4326to2202.forward([lonLat[0], lonLat[1]]);
+
+                    // Commit the clicked coordinate to the Vuex store
+                    this.setMarkedCoordinate(coord);
+
+                    // Zoom to the clicked coordinates
+                    this.map.getView().animate({
+                        center: event.coordinate,
+                        zoom: 18
+                    });
+
+                    // Trigger openSecondDrawer and fetchFeatures
+                    this.openSecondDrawer();
+                    this.fetchFeatures();
+                });
             } catch (error) {
                 console.error('Failed to initialize map:', error);
             }

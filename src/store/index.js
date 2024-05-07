@@ -24,7 +24,7 @@ export default createStore({
     searchFeatures: [],
     filterFeatures: [],
     secondDrawer: false,
-    markedCoordinate: { lat: 0, lng: 0 },
+    markedCoordinate: [],
     features: [],
     tracedFeature: null,
     // other state properties...
@@ -78,8 +78,9 @@ export default createStore({
     closeSecondDrawer(state) {
       state.secondDrawer = false;
     },
-    markCoordinate(state, coordinate) {
+    setMarkedCoordinate(state, coordinate) {
       state.markedCoordinate = coordinate;
+      console.log('marked coordinate in store', state.markedCoordinate);
     },
     setFeatures(state, features) {
       const modifiedFeatures = features.map(feature => {
@@ -127,6 +128,7 @@ export default createStore({
     
       // Push the modified features to the state
       state.features.push(...modifiedFeatures);
+      console.log('features in store', state.features);
     },
     joinCategoryToMapLayers(state) {
       // Iterate over mapDatasets and print each dataset's pk
@@ -196,7 +198,7 @@ export default createStore({
         const layerName = layer.name;
   
         // Construct the GetFeature request
-        const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:4326&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
+        const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
         axios.get(getFeatureRequest).then(response => {
           commit('setFeatures', response.data.features);
         });

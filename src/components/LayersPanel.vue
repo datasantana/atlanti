@@ -325,13 +325,12 @@ export default {
             }
         },
         filterAndEmit() {
-            const filteredFeatures = this.searchFeatures.filter(feature => feature.properties.nombre === this.selectedPlace);
-            console.log(filteredFeatures);
+            const filteredFeatures = this.searchFeatures.filter(feature => feature.properties.comunidad === this.selectedPlace);
             filteredFeatures.forEach(feature => {
-                const [lng, lat] = feature.geometry.coordinates;
-                const lngLat = { lat, lng };
-                console.log(lngLat);
-                this.$refs.webMap.addMarker({ lngLat: lngLat });
+                const [lng2202, lat2202] = converter4326to2202.forward([feature.geometry.coordinates[0], feature.geometry.coordinates[1]]);
+                const featureCoordinate = [lng2202, lat2202];
+                console.log('Filtered place coordinate', featureCoordinate);
+                this.$store.commit('setMarkedCoordinate', featureCoordinate);
             });
         },
         filterZoneAndEmit() {
