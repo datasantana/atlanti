@@ -166,6 +166,7 @@ export default createStore({
     },
     setTracedFeature(state, geometry) {
       state.tracedFeature = geometry;
+      console.log('traced feature in store', state.tracedFeature);
     },
     resetTracedFeature(state) {
       state.tracedFeature = null;
@@ -240,7 +241,7 @@ export default createStore({
             request: 'GetFeature',
             typeName: 'maracaibo:zonifica_ordenanza',
             outputFormat: 'application/json',
-            srsName: 'EPSG:4326',
+            srsName: 'EPSG:3857',
             // Add any other parameters you need...
           },
         });
@@ -265,6 +266,7 @@ export default createStore({
     },
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);
+      //console.log('traced feature in store', geometry);
     },
     markCoordinate({ commit }, coordinate) {
       commit('setMarkedCoordinate', coordinate);

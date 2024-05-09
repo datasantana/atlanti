@@ -305,12 +305,13 @@ export default {
         },
         reprojectAndEmit() {
             if (this.currentCRS === 'EPSG:2202') {
-                const sourceProjection = 'EPSG:2202'; // adjust this value as needed
-                const targetProjection = 'EPSG:4326';
-                const [reprojectedLng, reprojectedLat] = proj4(sourceProjection, targetProjection, [parseFloat(this.reprojectedLocation.lng), parseFloat(this.reprojectedLocation.lat)]);
-                this.$refs.webMap.addMarker({ lngLat: { lat: reprojectedLat, lng: reprojectedLng } });
+                const searchCoordinate = [this.reprojectedLocation2202.lng, this.reprojectedLocation2202.lat];
+                this.$store.commit('setMarkedCoordinate', searchCoordinate);
             } else {
-                this.$refs.webMap.addMarker({ lngLat: { lat: parseFloat(this.location.lat), lng: parseFloat(this.location.lng) } });
+                // reproject to 2202
+                const [lng2202, lat2202] = converter4326to2202.forward([this.mapLocation.lng, this.mapLocation.lat]);
+                const searchCoordinate = [lng2202, lat2202];
+                this.$store.commit('setMarkedCoordinate', searchCoordinate);
             }
         },
         getLegendWidth(url) {
@@ -329,7 +330,6 @@ export default {
             filteredFeatures.forEach(feature => {
                 const [lng2202, lat2202] = converter4326to2202.forward([feature.geometry.coordinates[0], feature.geometry.coordinates[1]]);
                 const featureCoordinate = [lng2202, lat2202];
-                console.log('Filtered place coordinate', featureCoordinate);
                 this.$store.commit('setMarkedCoordinate', featureCoordinate);
             });
         },

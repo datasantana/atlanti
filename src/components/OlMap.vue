@@ -13,7 +13,8 @@ import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import { Style, Icon } from 'ol/style';
+import { Style, Icon, Fill, Stroke } from 'ol/style';
+import GeoJSON from 'ol/format/GeoJSON';
 import mark from '@/assets/icons8-circle-24.png';
 
 import { mapState, mapMutations, mapActions } from 'vuex';
@@ -27,12 +28,14 @@ proj4.defs(destinationProjection2202, "+proj=utm +zone=19 +ellps=GRS80 +towgs84=
 
 // Create proj4 converters
 const converter4326to2202 = proj4(sourceProjection4326, destinationProjection2202);
+const converter2202to4326 = proj4(destinationProjection2202, sourceProjection4326);
 
 export default {
     name: "OlMap",
     data() {
         return {
-            map: null
+            map: null,
+            currentVectorLayer: null,
         }
     },
     async beforeMount() {
@@ -51,7 +54,7 @@ export default {
 
     },
     computed: {
-        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate']),
+        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate', 'tracedFeature']),
         sortedMapLayers() {
             return [...this.mapLayers].sort((a, b) => a.order - b.order);
         }
@@ -68,7 +71,87 @@ export default {
                 });
             },
             deep: true  // Watch for nested changes
-        }
+        },
+        markedCoordinate(newVal, oldVal) {
+            // check if the new value is different from the old value
+            if (newVal !== oldVal) {
+                // Clear the vector source
+                this.vectorSource.clear();
+
+                // Convert the new coordinate to longitude/latitude and then to EPSG:3758
+                const lonLat = converter2202to4326.forward([newVal[0], newVal[1]]);
+                const coord = fromLonLat(lonLat);
+                console.log(coord);
+
+                // Create a new feature with a point geometry at the new coordinates
+                const feature = new Feature({
+                geometry: new Point(coord)
+                });
+
+                // Add the feature to the vector source
+                this.vectorSource.addFeature(feature);
+
+                // Zoom to the new coordinates
+                this.map.getView().animate({
+                center: coord,
+                });
+
+                // Trigger openSecondDrawer and fetchFeatures
+                this.openSecondDrawer();
+                this.fetchFeatures();
+            }
+        },
+        tracedFeature(newVal, oldVal) {
+            if (newVal !== oldVal) {
+            // If there's a current vector layer, remove it from the map
+                if (this.currentVectorLayer) {
+                    this.map.removeLayer(this.currentVectorLayer);
+                }
+
+                // Create a GeoJSON format reader
+                const format = new GeoJSON();
+
+                // Read the GeoJSON data and convert it to features
+                const features = format.readFeatures(newVal, {
+                    dataProjection: 'EPSG:3857',
+                    featureProjection: this.map.getView().getProjection()
+                });
+
+                // Create a new vector source and add the features to it
+                const newVectorSource = new VectorSource({
+                    features: features
+                });
+
+                // Create a new style with a darker gray fill and a green stroke
+                const style = new Style({
+                    fill: new Fill({
+                    color: 'rgba(105, 105, 105, 0.5)'  // Darker gray
+                    }),
+                    stroke: new Stroke({
+                    color: 'green',  // Green
+                    width: 2
+                    })
+                });
+
+                // Create a new vector layer with the new vector source
+                const newVectorLayer = new VectorLayer({
+                    source: newVectorSource,
+                    style: style
+                });
+
+                // Add the new vector layer to the map
+                this.map.addLayer(newVectorLayer);
+
+                // Update the current vector layer
+                this.currentVectorLayer = newVectorLayer;
+
+                // Get the extent of the features
+                const extent = newVectorSource.getExtent();
+
+                // Fit the view to the extent of the features
+                this.map.getView().fit(extent, { duration: 1000 });
+            }
+        },
     },
     methods: {
         ...mapMutations(['setMarkedCoordinate', 'openSecondDrawer']),
@@ -110,9 +193,9 @@ export default {
                 });
 
                 // Create a vector source and add it to a vector layer
-                const vectorSource = new VectorSource();
+                this.vectorSource = new VectorSource();
                 const vectorLayer = new VectorLayer({
-                    source: vectorSource,
+                    source: this.vectorSource,
                     style: new Style({
                         image: new Icon({
                             anchor: [0.5, 0.5], // Adjust these values as needed
@@ -129,7 +212,7 @@ export default {
                 // Add a click event listener to the map
                 this.map.on('click', (event) => {
                     // Clear the vector source
-                    vectorSource.clear();
+                    this.vectorSource.clear();
                     
                     // Create a new feature with a point geometry at the clicked coordinates
                     const feature = new Feature({
@@ -137,7 +220,7 @@ export default {
                     });
 
                     // Add the feature to the vector source
-                    vectorSource.addFeature(feature);
+                    this.vectorSource.addFeature(feature);
 
                     // Convert the clicked coordinate to longitude/latitude and then to EPSG:2202
                     const lonLat = toLonLat(event.coordinate);
@@ -152,9 +235,6 @@ export default {
                         zoom: 18
                     });
 
-                    // Trigger openSecondDrawer and fetchFeatures
-                    this.openSecondDrawer();
-                    this.fetchFeatures();
                 });
             } catch (error) {
                 console.error('Failed to initialize map:', error);
