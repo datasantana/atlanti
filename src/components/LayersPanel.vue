@@ -146,7 +146,7 @@
                         ></v-select>
                     </v-col>
                     <v-col cols="2">
-                        <v-btn size="small" icon="mdi-home" @click="location = { lng: -71.6930587033, lat: 10.6775887114, zoom: 11.6, pitch: 0, bearing: 0 }" color="accent"></v-btn>
+                        <v-btn size="small" icon="mdi-home" @click="resetMapLocation" color="accent"></v-btn>
                     </v-col>
                 </v-row>
             </v-card-actions>
@@ -287,6 +287,9 @@ export default {
                 subtitle: item.value,
             };
         },
+        resetMapLocation() {
+            this.$store.dispatch('updateMapLocation', { lng: -71.6930587033, lat: 10.6775887114, zoom: 11.6, pitch: 0, bearing: 0 });
+        },
         switchCRS(crs) {
             this.currentCRS = crs;
             let convertedLocation;
@@ -335,7 +338,7 @@ export default {
         },
         filterZoneAndEmit() {
             const filteredFeatures = this.filterFeatures.filter(feature => feature.properties.nombre_zona === this.selectedZone);
-            console.log(filteredFeatures);
+            //console.log(filteredFeatures);
 
             if (filteredFeatures && filteredFeatures.length > 0) {
                 const mergedGeometry = {

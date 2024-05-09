@@ -44,4 +44,15 @@ export default {
   width: 100%;
   position: relative;
 }
+
+#layout {
+    position: relative;
+}
+
+#sidebar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1; /* This will make sure the sidebar is above the map container */
+}
 </style>

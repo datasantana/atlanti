@@ -52,7 +52,7 @@ export default createStore({
           }
         };
       });
-      console.log('layers in store', state.mapLayers);
+      //console.log('layers in store', state.mapLayers);
     },
     clearSelectedMap(state) {
       state.selectedMap = null;
@@ -80,7 +80,7 @@ export default createStore({
     },
     setMarkedCoordinate(state, coordinate) {
       state.markedCoordinate = coordinate;
-      console.log('marked coordinate in store', state.markedCoordinate);
+      //console.log('marked coordinate in store', state.markedCoordinate);
     },
     setFeatures(state, features) {
       const modifiedFeatures = features.map(feature => {
@@ -128,7 +128,7 @@ export default createStore({
     
       // Push the modified features to the state
       state.features.push(...modifiedFeatures);
-      console.log('features in store', state.features);
+      //console.log('features in store', state.features);
     },
     joinCategoryToMapLayers(state) {
       // Iterate over mapDatasets and print each dataset's pk
@@ -166,7 +166,7 @@ export default createStore({
     },
     setTracedFeature(state, geometry) {
       state.tracedFeature = geometry;
-      console.log('traced feature in store', state.tracedFeature);
+      //console.log('traced feature in store', state.tracedFeature);
     },
     resetTracedFeature(state) {
       state.tracedFeature = null;
@@ -176,6 +176,10 @@ export default createStore({
     },
     setFilterFeatures(state, features) {
       state.filterFeatures = features;
+    },
+    SET_MAP_LOCATION(state, location) {
+      state.mapLocation = location;
+      //console.log('map location in store', state.mapLocation);
     },
     // other mutations...
   },
@@ -226,7 +230,7 @@ export default createStore({
         });
     
         commit('setSearchFeatures', featuresWithCentroids);
-        console.log('search features in store', featuresWithCentroids);
+        //console.log('search features in store', featuresWithCentroids);
       } catch (error) {
         console.error('Failed to fetch features:', error);
       }
@@ -247,7 +251,7 @@ export default createStore({
         });
     
         commit('setFilterFeatures', response.data.features);
-        console.log('filter features in store', response.data.features);
+        //console.log('filter features in store', response.data.features);
       } catch (error) {
         console.error('Failed to fetch features:', error);
       }
@@ -261,7 +265,7 @@ export default createStore({
         datasets.push(response.data);
       }
       commit('setMapDatasets', datasets);
-      console.log('datasets in store', state.mapDatasets);
+      //console.log('datasets in store', state.mapDatasets);
       commit('joinCategoryToMapLayers');
     },
     traceFeature({ commit }, geometry) {
@@ -271,6 +275,9 @@ export default createStore({
     markCoordinate({ commit }, coordinate) {
       commit('setMarkedCoordinate', coordinate);
       commit('resetTracedFeature');
+    },
+    updateMapLocation({ commit }, location) {
+        commit('SET_MAP_LOCATION', location);
     },
     // other actions...
   },

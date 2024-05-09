@@ -81,7 +81,7 @@ export default {
                 // Convert the new coordinate to longitude/latitude and then to EPSG:3758
                 const lonLat = converter2202to4326.forward([newVal[0], newVal[1]]);
                 const coord = fromLonLat(lonLat);
-                console.log(coord);
+                //console.log(coord);
 
                 // Create a new feature with a point geometry at the new coordinates
                 const feature = new Feature({
@@ -150,6 +150,12 @@ export default {
 
                 // Fit the view to the extent of the features
                 this.map.getView().fit(extent, { duration: 1000 });
+            }
+        },
+        mapLocation(newLocation) {
+            if (newLocation) {
+                this.map.getView().setCenter(fromLonLat([newLocation.lng, newLocation.lat]));
+                this.map.getView().setZoom(newLocation.zoom);
             }
         },
     },
