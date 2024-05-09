@@ -3,10 +3,20 @@ import axios from 'axios';
 //axios.defaults.baseURL = process.env.VUE_APP_NODE_URL;
 //axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
+import { toLonLat } from 'ol/proj';
+
 import * as turf from '@turf/turf';
+//import { set } from 'core-js/core/dict';
 
 export default createStore({
   state: {
+    mapLocation: {
+      lng: -71.6930587033,
+      lat: 10.6775887114,
+      bearing: 0,
+      pitch: 0,
+      zoom: 11.6,
+    },
     maps: [],
     selectedMap: null,
     mapLayers: [],
@@ -14,7 +24,7 @@ export default createStore({
     searchFeatures: [],
     filterFeatures: [],
     secondDrawer: false,
-    markedCoordinate: { lat: 0, lng: 0 },
+    markedCoordinate: [],
     features: [],
     tracedFeature: null,
     // other state properties...
@@ -42,10 +52,19 @@ export default createStore({
           }
         };
       });
-      console.log('layers in store', state.mapLayers);
+      //console.log('layers in store', state.mapLayers);
     },
     clearSelectedMap(state) {
       state.selectedMap = null;
+    },
+    setMapCenter(state, center) {
+      // Reproject the center from EPSG:3857 to EPSG:4326
+      center = toLonLat(center);
+      state.mapLocation.lng = center[0];
+      state.mapLocation.lat = center[1];
+    },
+    setMapZoom(state, zoom) {
+      state.mapLocation.zoom = zoom;
     },
     setMapLayers(state, mapLayers) {
       state.mapLayers = mapLayers;
@@ -53,17 +72,15 @@ export default createStore({
     setMapDatasets(state, datasets) {
       state.mapDatasets = datasets;
     },
-    setLayerOpacity(state, { layerIndex, opacity }) {
-      state.mapLayers[layerIndex].opacity = opacity;
-    },
     openSecondDrawer(state) {
       state.secondDrawer = true;
     },
     closeSecondDrawer(state) {
       state.secondDrawer = false;
     },
-    markCoordinate(state, coordinate) {
+    setMarkedCoordinate(state, coordinate) {
       state.markedCoordinate = coordinate;
+      //console.log('marked coordinate in store', state.markedCoordinate);
     },
     setFeatures(state, features) {
       const modifiedFeatures = features.map(feature => {
@@ -111,6 +128,7 @@ export default createStore({
     
       // Push the modified features to the state
       state.features.push(...modifiedFeatures);
+      //console.log('features in store', state.features);
     },
     joinCategoryToMapLayers(state) {
       // Iterate over mapDatasets and print each dataset's pk
@@ -148,6 +166,7 @@ export default createStore({
     },
     setTracedFeature(state, geometry) {
       state.tracedFeature = geometry;
+      //console.log('traced feature in store', state.tracedFeature);
     },
     resetTracedFeature(state) {
       state.tracedFeature = null;
@@ -157,6 +176,10 @@ export default createStore({
     },
     setFilterFeatures(state, features) {
       state.filterFeatures = features;
+    },
+    SET_MAP_LOCATION(state, location) {
+      state.mapLocation = location;
+      //console.log('map location in store', state.mapLocation);
     },
     // other mutations...
   },
@@ -180,7 +203,7 @@ export default createStore({
         const layerName = layer.name;
   
         // Construct the GetFeature request
-        const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:4326&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
+        const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
         axios.get(getFeatureRequest).then(response => {
           commit('setFeatures', response.data.features);
         });
@@ -207,7 +230,7 @@ export default createStore({
         });
     
         commit('setSearchFeatures', featuresWithCentroids);
-        console.log('search features in store', featuresWithCentroids);
+        //console.log('search features in store', featuresWithCentroids);
       } catch (error) {
         console.error('Failed to fetch features:', error);
       }
@@ -222,13 +245,13 @@ export default createStore({
             request: 'GetFeature',
             typeName: 'maracaibo:zonifica_ordenanza',
             outputFormat: 'application/json',
-            srsName: 'EPSG:4326',
+            srsName: 'EPSG:3857',
             // Add any other parameters you need...
           },
         });
     
         commit('setFilterFeatures', response.data.features);
-        console.log('filter features in store', response.data.features);
+        //console.log('filter features in store', response.data.features);
       } catch (error) {
         console.error('Failed to fetch features:', error);
       }
@@ -242,15 +265,19 @@ export default createStore({
         datasets.push(response.data);
       }
       commit('setMapDatasets', datasets);
-      console.log('datasets in store', state.mapDatasets);
+      //console.log('datasets in store', state.mapDatasets);
       commit('joinCategoryToMapLayers');
     },
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);
+      //console.log('traced feature in store', geometry);
     },
     markCoordinate({ commit }, coordinate) {
       commit('setMarkedCoordinate', coordinate);
       commit('resetTracedFeature');
+    },
+    updateMapLocation({ commit }, location) {
+        commit('SET_MAP_LOCATION', location);
     },
     // other actions...
   },
