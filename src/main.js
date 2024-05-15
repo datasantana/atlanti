@@ -11,6 +11,9 @@ import * as directives from 'vuetify/directives'
 import 'vuetify/dist/vuetify.min.css'
 import '@mdi/font/css/materialdesignicons.css'
 
+//Custom
+import './scss/main.scss'
+
 const vuetify = createVuetify({
   theme: {
     options: { customProperties: true }, // This allows you to use the defined colors as CSS variables
