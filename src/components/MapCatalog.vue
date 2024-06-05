@@ -4,10 +4,10 @@
             <v-row>
                 <v-col cols="12" md="6">
                     <v-card class="mx-auto" variant="flat">
-                        <v-card-title class="text-h3 text-wrap">Mapa de <br> Zonificación Urbana <br> de Maracaibo</v-card-title>
+                        <v-card-title class="text-h3 text-wrap">SIG Maracaibo</v-card-title>
                         <v-card-subtitle class="text-h5 mt-3">¡Bienvenido!</v-card-subtitle>
                         <v-card-text>
-                            <p>En esta sección podrás consultar el mapa de zonificación urbana del municipio, el cual ha sido preparado por el Centro de Procesamiento Urbano (CPU) para facilitar el acceso a la información del uso del suelo a los ciudadanos.</p>
+                            <p>El Centro de Procesamiento Urbano (CPU) habilitó un visor geografico de consulta ciudadana que permitirá encontrar: información cartográfica, la zonificación del municipio Maracaibo, entre otros datos de interés para los ciudadanos.</p>
                             <v-divider></v-divider>
                             <p class="text-caption">Para ver el mapa, haz click en el botón <strong>Ver Mapa</strong> de la tarjeta a continuación.</p>
                             <!--p class="text-caption">Para ver los detalles de un mapa, haz click en el botón <v-icon color="error">mdi-information</v-icon>.</p-->
@@ -49,21 +49,21 @@
                 <v-row>
                     <v-col cols="12" md="4"> 
                         <img :src="icon1" alt="Map icon">
-                        <p>
+                        <!-- <p>
                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, ipsa sequi? Voluptatem optio nam eligendi amet id
-                        </p> 
+                        </p>  -->
                     </v-col>
                     <v-col cols="12" md="4">     
                         <img :src="icon2" alt="Map icon">
-                        <p>
+                        <!-- <p>
                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, ipsa sequi? Voluptatem optio nam eligendi amet id
-                        </p>        
+                        </p>         -->
                     </v-col>
                     <v-col cols="12" md="4">   
                         <img :src="icon3" alt="Map icon">
-                        <p>
+                        <!-- <p>
                             Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, ipsa sequi? Voluptatem optio nam eligendi amet id
-                        </p>          
+                        </p>           -->
                     </v-col>
                 </v-row>
             </div>
@@ -208,6 +208,10 @@ a {
     justify-content: center;
     align-items: center;
     height: fit-content;
+}
+
+.features div[class^="v-col-"]{
+    text-align: center;
 }
 .details{
     grid-row-start: 4;
