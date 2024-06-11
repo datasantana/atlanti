@@ -7,7 +7,7 @@
                         <v-card-title class="text-h3 text-wrap">SIG Maracaibo</v-card-title>
                         <v-card-subtitle class="text-h5 mt-3">¡Bienvenido!</v-card-subtitle>
                         <v-card-text>
-                            <p>El Centro de Procesamiento Urbano (CPU) habilitó un visor geografico de consulta ciudadana que permitirá encontrar: información cartográfica, la zonificación del municipio Maracaibo, entre otros datos de interés para los ciudadanos.</p>
+                            <p>El Centro de Procesamiento Urbano (CPU) habilitó un visor geográfico de consulta ciudadana que permitirá encontrar: información cartográfica, la zonificación del municipio Maracaibo, entre otros datos de interés para los ciudadanos.</p>
                             <v-divider></v-divider>
                             <p class="text-caption">Para ver el mapa, haz click en el botón <strong>Ver Mapa</strong> de la tarjeta a continuación.</p>
                             <!--p class="text-caption">Para ver los detalles de un mapa, haz click en el botón <v-icon color="error">mdi-information</v-icon>.</p-->
