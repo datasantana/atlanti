@@ -9,17 +9,34 @@
             <Map ref="webMap" />
         </div>
     </div>
+    <v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="450">
+        <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="flat" max-width="450">
+            <v-card-actions>
+                <v-btn icon="mdi-close" @click="closeSecondDrawer"></v-btn>
+            </v-card-actions>
+            <v-divider></v-divider>
+            <v-card-item>
+                <div class="text-overline mb-1">
+                    Norte: {{ markedCoordinate && markedCoordinate[1] ? parseFloat(markedCoordinate[1].toFixed(2)) : 'N/A' }} - Este: {{ markedCoordinate && markedCoordinate[0] ? parseFloat(markedCoordinate[0].toFixed(2)) : 'N/A' }}
+                </div>
+                <ResultsPanel />
+            </v-card-item>
+        </v-card>
+    </v-navigation-drawer>
 </template>
 
 <script>
 import Map from "@/components/OlMap.vue";
 import LayersPanel from "@/components/LayersPanel.vue";
+import ResultsPanel from "@/components/ResultsPanel.vue"
+import { mapState, mapMutations} from 'vuex';
 
 export default {
     name: "MapView",
     components: {
         Map,
         LayersPanel,
+        ResultsPanel,
     },
     data() {
         return {
@@ -33,6 +50,12 @@ export default {
 
             },
         };
+    },
+    computed: {
+        ...mapState(['markedCoordinate']),
+    },
+    methods: {
+        ...mapMutations(['closeSecondDrawer']),
     },
 };
 </script>
