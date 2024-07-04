@@ -23,9 +23,6 @@ export default {
       logo: require('@/assets/alcaldia-de-maracaibo-logo-web.png'), // Add your logo here
     };
   },
-  methods: {
-
-  },
   computed: {
     title() {
       return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor Consulta Ciudadana'; // Change the title of the app
@@ -38,22 +35,4 @@ export default {
 .router-container {
   height: calc(100vh - 64px); /* Adjust as needed */
 }
-.overflow-y-auto {
-  overflow-y: auto;
-  max-height: 450px; /* Adjust this value as needed */
-}
-
-.wrap-text pre {
-  white-space: pre-wrap;       /* CSS 3 */
-  /*white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  /*white-space: -pre-wrap;      /* Opera 4-6 */
-  /*white-space: -o-pre-wrap;    /* Opera 7 */
-  /*word-wrap: break-word;       /* Internet Explorer 5.5+ */
-}
-
-.custom-class {
-    background: rgb(var(--v-theme-secondary));
-    color: rgba(var(--v-theme-on-bodytext), 0.9)
-  }
-
 </style>
