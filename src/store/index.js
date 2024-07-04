@@ -128,7 +128,7 @@ export default createStore({
     
       // Push the modified features to the state
       state.features.push(...modifiedFeatures);
-      console.log('features in store', state.features);
+      //console.log('features in store', state.features);
     },
     joinCategoryToMapLayers(state) {
       // Iterate over mapDatasets and print each dataset's pk

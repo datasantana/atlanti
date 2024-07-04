@@ -19,6 +19,7 @@
                 <div class="text-overline mb-1">
                     Norte: {{ markedCoordinate && markedCoordinate[1] ? parseFloat(markedCoordinate[1].toFixed(2)) : 'N/A' }} - Este: {{ markedCoordinate && markedCoordinate[0] ? parseFloat(markedCoordinate[0].toFixed(2)) : 'N/A' }}
                 </div>
+                <ResultsPanel />
             </v-card-item>
         </v-card>
     </v-navigation-drawer>
@@ -27,6 +28,7 @@
 <script>
 import Map from "@/components/OlMap.vue";
 import LayersPanel from "@/components/LayersPanel.vue";
+import ResultsPanel from "@/components/ResultsPanel.vue"
 import { mapState, mapMutations} from 'vuex';
 
 export default {
@@ -34,6 +36,7 @@ export default {
     components: {
         Map,
         LayersPanel,
+        ResultsPanel,
     },
     data() {
         return {

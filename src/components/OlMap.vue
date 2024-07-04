@@ -58,9 +58,6 @@ export default {
         sortedMapLayers() {
             return [...this.mapLayers].sort((a, b) => a.order - b.order);
         },
-        specialFeature() {
-            return this.features.filter(feature => feature.title === 'Ordenanza Zonificación de Maracaibo');
-        },
         
     },
     watch: {
