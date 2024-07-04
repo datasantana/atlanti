@@ -1,4 +1,4 @@
-<template>
+<template>    
     <div ref="mapContainer" class="map-container"></div>
 </template>
 
@@ -54,10 +54,14 @@ export default {
 
     },
     computed: {
-        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate', 'tracedFeature']),
+        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate', 'tracedFeature', 'features']),
         sortedMapLayers() {
             return [...this.mapLayers].sort((a, b) => a.order - b.order);
-        }
+        },
+        specialFeature() {
+            return this.features.filter(feature => feature.title === 'Ordenanza Zonificación de Maracaibo');
+        },
+        
     },
     watch: {
         mapLayers: {

@@ -1,5 +1,4 @@
 <template>
-    <div ref="mapContainer" class="map-container"></div>
     <v-navigation-drawer v-model="$store.state.secondDrawer" app location="right" width="450">
       <!-- Add your second drawer content here -->
       <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="flat" max-width="450">
@@ -44,6 +43,7 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
+    <div ref="mapContainer" class="map-container"></div>
 </template>
 
 <script>
@@ -205,12 +205,12 @@ export default {
         visibleAttributes() {
             return this.otherFeatures.map(feature => {
                 return feature.properties.attribute_set.filter(attribute_set => attribute_set.visible);
-        });
+            });
         },
         firstVisibleAttributes() {
             return this.visibleAttributes.map(attributes => {
                 return attributes.sort((a, b) => a.display_order - b.display_order)[0];
-        });
+            });
         },
     },
     methods: {
@@ -260,19 +260,19 @@ export default {
                 'type': 'raster',
                 'source': `wms-source-${layer.pk}`,
                 'paint': {
-                'raster-opacity': layer.opacity
+            'raster-opacity': layer.opacity
                 },
                 'layout': {
-                'visibility': layer.visibility ? 'visible' : 'none'
+            'visibility': layer.visibility ? 'visible' : 'none'
                 }
             });
         },
         getLocation() {
             return {
-            ...this.map.getCenter(),
-            bearing: this.map.getBearing(),
-            pitch: this.map.getPitch(),
-            zoom: this.map.getZoom(),
+        ...this.map.getCenter(),
+        bearing: this.map.getBearing(),
+        pitch: this.map.getPitch(),
+        zoom: this.map.getZoom(),
             }
         },
         addMarker(e) {
