@@ -59,7 +59,11 @@ export default createStore({
       state.selectedMap = null;
     },
     setCategories(state, categories) {
-      state.categories = categories
+      // Filter categories with "count" property greater than 0
+      const filteredCategories = categories.filter(category => category.count > 0);
+      // Set the state with the filtered categories
+      state.categories = filteredCategories;
+      console.log('filtered categories in store', state.categories);
     },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326
