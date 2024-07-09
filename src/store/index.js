@@ -19,6 +19,7 @@ export default createStore({
     },
     maps: [],
     selectedMap: null,
+    categories: [],
     mapLayers: [],
     mapDatasets: [],
     searchFeatures: [],
@@ -56,6 +57,9 @@ export default createStore({
     },
     clearSelectedMap(state) {
       state.selectedMap = null;
+    },
+    setCategories(state, categories) {
+      state.categories = categories
     },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326
@@ -191,6 +195,23 @@ export default createStore({
       commit('setMaps', response.data.maps);
       // Return the maps
       return response.data.maps;
+    },
+    async fetchCategories({ commit }) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      let page = 1;
+      let categories = [];
+      let total = 0;
+
+      do {
+      const response = await axios.get(`${url}${api}categories/?page=${page}`);
+      categories.push(...response.data.categories);
+      total = response.data.total;
+      page++;
+      } while (categories.length < total);
+
+      console.log('categories in store', categories);
+      commit('setCategories', categories);
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array

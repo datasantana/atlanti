@@ -198,6 +198,9 @@ export default {
             selectedZone: null,
         };
     },
+    beforeMount() {
+        this.$store.dispatch('fetchCategories');
+    },
     computed: {
         ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
         reprojectedLocation2202() {
