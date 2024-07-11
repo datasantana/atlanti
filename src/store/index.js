@@ -20,6 +20,7 @@ export default createStore({
     maps: [],
     selectedMap: null,
     categories: [],
+    datasets: [],
     mapLayers: [],
     mapDatasets: [],
     searchFeatures: [],
@@ -64,6 +65,28 @@ export default createStore({
       // Set the state with the filtered categories
       state.categories = filteredCategories;
       console.log('filtered categories in store', state.categories);
+    },
+    setDatasets(state, datasets) {
+      // Map over datasets and find the corresponding category for each dataset
+      const updatedDatasets = datasets.map(dataset => {
+      // Iterate categories to find the corresponding category for each dataset
+      for (const category of state.categories) {
+        if (category.identifier === dataset.category?.identifier) {
+        // Create a new dataset object with the joined category.gen_description property
+        return {
+          ...dataset,
+          category: {
+          ...dataset.category,
+          gn_description: category.gn_description
+          }
+        };
+        }
+      }
+      // If no matching category is found, return the original dataset object
+      return dataset;
+      });
+      state.datasets = updatedDatasets;
+      console.log('datasets in store', state.datasets);
     },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326
@@ -200,7 +223,7 @@ export default createStore({
       // Return the maps
       return response.data.maps;
     },
-    async fetchCategories({ commit }) {
+    async fetchCategories({ commit, dispatch }) {
       const url = process.env.VUE_APP_NODE_URL;
       const api = process.env.VUE_APP_NODE_API_ENDPOINT;
       let page = 1;
@@ -216,6 +239,8 @@ export default createStore({
 
       console.log('categories in store', categories);
       commit('setCategories', categories);
+      // After setting categories, dispatch fetchDatasets to fetch datasets
+      await dispatch('fetchAllDatasets');
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
@@ -281,6 +306,7 @@ export default createStore({
         console.error('Failed to fetch features:', error);
       }
     },
+    // Deprecate this method due to the use of the new method fetchDatasets
     async fetchDatasets({ commit, state }) {
       const datasets = [];
       for (const layer of state.mapLayers) {
@@ -292,6 +318,24 @@ export default createStore({
       commit('setMapDatasets', datasets);
       //console.log('datasets in store', state.mapDatasets);
       commit('joinCategoryToMapLayers');
+    },
+    // Implement this method to fetch all datasets -- add commit('setMapDatasets', datasets) to the fetchAllDatasets method
+    async fetchAllDatasets({ commit }) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      let page = 1;
+      let datasets = [];
+      let total = 0;
+
+      do {
+        const response = await axios.get(`${url}${api}datasets/?page=${page}`);
+        datasets.push(...response.data.datasets);
+        total = response.data.total;
+        page++;
+      } while (datasets.length < total);
+
+      //console.log('datasets to commit', datasets);
+      commit('setDatasets', datasets);
     },
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);

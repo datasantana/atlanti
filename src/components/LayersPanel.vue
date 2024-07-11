@@ -110,7 +110,27 @@
                 </v-row>
             </v-card-title>
             <v-card-text style="max-height: 400px; overflow-y: auto;">
-                <!--Layers panel-->
+                <!--Layers panel redisign-->
+                <v-expansion-panels>
+                    <v-expansion-panel v-for="category in categories" :key="category.identifier">
+                        <v-expansion-panel-title>{{ category.gn_description }}</v-expansion-panel-title>
+                        <v-expansion-panel-text v-for="dataset in filteredDatasets(category.identifier)" :key="dataset.pk">
+                            <details>
+                                <summary>{{ dataset.title }}</summary>
+                                <p class="text-caption" v-html="dataset.abstract"></p>
+                                <div class="layer-controls">
+                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility"></v-slider>
+                                    <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility"></v-switch>
+                                </div>
+                                <div class="legend overflow-y-auto">
+                                    <v-img :src="dataset.links[0].url" width="70%" contain ></v-img>
+                                </div>
+                            </details>
+                        </v-expansion-panel-text>
+                    </v-expansion-panel>
+                </v-expansion-panels>
+
+                <!--Layers panel to be deprecated-->
                 <v-expansion-panels>
                     <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
                         <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
@@ -202,7 +222,12 @@ export default {
         this.$store.dispatch('fetchCategories');
     },
     computed: {
-        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
+        ...mapState(['categories', 'datasets', 'mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
+        filteredDatasets() {
+            return (categoryId) => {
+                return this.datasets.filter(dataset => dataset.category && dataset.category.identifier === categoryId);
+            };
+        },
         reprojectedLocation2202() {
             if (this.mapLocation && this.mapLocation.lng && this.mapLocation.lat) {
                 const [lng2202, lat2202] = converter4326to2202.forward([this.mapLocation.lng, this.mapLocation.lat]);
