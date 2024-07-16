@@ -120,22 +120,25 @@
                                 <p class="text-caption" v-html="dataset.abstract"></p>
                                 <div class="layer-controls">
                                     <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility"></v-slider>
-                                    <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility"></v-switch>
+                                    <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility" @change="() => fetchStyle(dataset.alternate)"></v-switch>
                                 </div>
-                                <div class="legend overflow-y-auto">
-                                    <v-img :src="dataset.links[0].url" width="70%" contain ></v-img>
+                                <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
+                                    <div class="legend-item" :style="{ backgroundColor: style.fill.color, width: '10px', height: '20px', marginRight: '5px' }"></div>
+                                    <div class="legend-item">{{ style.name }}</div>
+                                    <v-spacer></v-spacer>
+                                    <input class="legend-item" type="checkbox" v-model="style.selected" checked>
                                 </div>
                             </details>
                         </v-expansion-panel-text>
                     </v-expansion-panel>
                 </v-expansion-panels>
 
-                <!--Layers panel to be deprecated-->
+                <!--Layers panel to be deprecated>
                 <v-expansion-panels>
                     <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
                         <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
                             <v-expansion-panel-text>
-                                <!--Layers and controls-->
+                                <Layers and controls>
                                 <section>
                                     <details v-for="layer in group" :key="layer.id">
                                         <summary>{{ layer.dataset.title }}</summary>
@@ -145,14 +148,14 @@
                                             <v-switch class="layer-visibility" color="accent" v-model="layer.visibility"></v-switch>
                                         </div>
                                         <div class="legend overflow-y-auto">
-                                            <!--v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img-->
+                                            <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
                                             <v-img :src="layer.dataset.links[0].url" :width="getLegendWidth(layer.dataset.links[0].url)" contain></v-img>
                                         </div>
                                     </details>
                                 </section>
                             </v-expansion-panel-text>
                     </v-expansion-panel>
-                </v-expansion-panels>
+                </v-expansion-panels-->
             </v-card-text>
             <v-divider></v-divider>
             <v-card-actions>
@@ -176,7 +179,7 @@
 
 <script>
 import proj4 from 'proj4';
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 
 // Define the source and destination projections
 const sourceProjection4326 = 'EPSG:4326';
@@ -222,7 +225,7 @@ export default {
         this.$store.dispatch('fetchCategories');
     },
     computed: {
-        ...mapState(['categories', 'datasets', 'mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
+        ...mapState(['categories', 'datasets', 'styles', 'mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
         filteredDatasets() {
             return (categoryId) => {
                 return this.datasets.filter(dataset => dataset.category && dataset.category.identifier === categoryId);
@@ -309,6 +312,7 @@ export default {
         this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
     },
     methods: {
+        ...mapActions(['fetchStyle']),
         itemProps(item) {
             return {
                 title: item.text,
@@ -411,5 +415,16 @@ export default {
 
 .layer-visibility {
   margin-left: 30px;
+}
+
+.legend{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+}
+
+.legend-item {
+    margin: 5px;
 }
 </style>

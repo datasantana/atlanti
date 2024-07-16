@@ -21,6 +21,7 @@ export default createStore({
     selectedMap: null,
     categories: [],
     datasets: [],
+    styles: [],
     mapLayers: [],
     mapDatasets: [],
     searchFeatures: [],
@@ -88,6 +89,46 @@ export default createStore({
       state.datasets = updatedDatasets;
       console.log('datasets in store', state.datasets);
     },
+    setStyles(state, style) {
+      // parse xml string to xml document
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(style, 'text/xml');
+      // maps attributes and values to a JSON object
+      const styleJSON = {};
+      console.log('xmlDoc', xmlDoc);
+      const layerName = xmlDoc.getElementsByTagName('sld:Name')[0].textContent;
+      console.log('layerName', layerName);
+      const featureTypeStyles = xmlDoc.getElementsByTagName('sld:FeatureTypeStyle');
+      const rules = featureTypeStyles[0].getElementsByTagName('sld:Rule');
+      console.log('rules', rules);
+      // find all rules
+      for (let i = 0; i < rules.length; i++) {
+        const nameElement = rules[i].getElementsByTagName('sld:Name')[0];
+        if (nameElement) {
+          const name = nameElement.textContent;
+          console.log('name', name);
+          const polygonSymbolizer = rules[i].getElementsByTagName('sld:PolygonSymbolizer')[0];
+          const fill = polygonSymbolizer.getElementsByTagName('sld:Fill')[0];
+          const stroke = polygonSymbolizer.getElementsByTagName('sld:Stroke')[0];
+          styleJSON[i] = {
+        name: name,
+        fill: {
+          color: fill.getElementsByTagName('sld:CssParameter')[0].textContent
+        },
+        stroke: {
+          color: stroke.getElementsByTagName('sld:CssParameter')[0].textContent
+        }
+          };
+        }
+      }
+
+      const allStyles = Object.keys(styleJSON).reduce((acc, key) => {
+        const modifiedStyle = { ...styleJSON[key] };
+        return { ...acc, [Number(key)]: modifiedStyle };
+      }, {});
+      state.styles = { ...state.styles, [layerName]: allStyles };
+      console.log('styles in store', state.styles);
+    },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326
       center = toLonLat(center);
@@ -97,6 +138,7 @@ export default createStore({
     setMapZoom(state, zoom) {
       state.mapLocation.zoom = zoom;
     },
+    // seems to not being used
     setMapLayers(state, mapLayers) {
       state.mapLayers = mapLayers;
     },
@@ -241,6 +283,15 @@ export default createStore({
       commit('setCategories', categories);
       // After setting categories, dispatch fetchDatasets to fetch datasets
       await dispatch('fetchAllDatasets');
+    },
+    fetchStyle({ commit }, layerName) {
+      const wmsURL = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
+      const getStyleRequest = `${wmsURL}?request=GetStyles&layers=${layerName}&service=wms&version=1.1.1`;
+      //console.log('getStyleRequest', getStyleRequest);
+      axios.get(getStyleRequest).then(response => {
+        //console.log('style response', response.data);
+        commit('setStyles', response.data);
+      });
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
