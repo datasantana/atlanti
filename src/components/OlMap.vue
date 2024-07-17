@@ -185,7 +185,7 @@ export default {
                     visible: layer.visibility,
                     pk: layer.pk  // Set the pk of the OpenLayers layer
                 }));
-                console.log(wmsLayers);
+                //console.log(wmsLayers);
 
                 this.map = new Map({
                     target: this.$refs.mapContainer,

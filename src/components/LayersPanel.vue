@@ -123,7 +123,9 @@
                                     <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility" @change="() => fetchStyle(dataset.alternate)"></v-switch>
                                 </div>
                                 <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
-                                    <div class="legend-item" :style="{ backgroundColor: style.fill.color, width: '10px', height: '20px', marginRight: '5px' }"></div>
+                                    <div v-if="style.type === 'Polygon'" class="polygon legend-item" :style="{ backgroundColor: style.fill.color, width: '10px', height: '20px', marginRight: '5px' }"></div>
+                                    <div v-if="style.type === 'Line'" class="line legend-item" :style="{ border: '2px solid ' + style.stroke.color, width: '10px', height: '2px', marginRight: '5px' }"></div>
+                                    <div v-if="style.type === 'Point'" class="point legend-item" :style="{ borderRadius: '5px', backgroundColor: style.mark.fill.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '5px' }"></div>
                                     <div class="legend-item">{{ style.name }}</div>
                                     <v-spacer></v-spacer>
                                     <input class="legend-item" type="checkbox" v-model="style.selected" checked>

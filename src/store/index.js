@@ -106,19 +106,44 @@ export default createStore({
         const nameElement = rules[i].getElementsByTagName('sld:Name')[0];
         if (nameElement) {
           const name = nameElement.textContent;
-          console.log('name', name);
-          const polygonSymbolizer = rules[i].getElementsByTagName('sld:PolygonSymbolizer')[0];
-          const fill = polygonSymbolizer.getElementsByTagName('sld:Fill')[0];
-          const stroke = polygonSymbolizer.getElementsByTagName('sld:Stroke')[0];
-          styleJSON[i] = {
-        name: name,
-        fill: {
-          color: fill.getElementsByTagName('sld:CssParameter')[0].textContent
-        },
-        stroke: {
-          color: stroke.getElementsByTagName('sld:CssParameter')[0].textContent
-        }
+          const symbolizer = {
+            name: name
           };
+    
+          // Check for PolygonSymbolizer
+          const polygonSymbolizer = rules[i].getElementsByTagName('sld:PolygonSymbolizer')[0];
+          if (polygonSymbolizer) {
+            const fill = polygonSymbolizer.getElementsByTagName('sld:Fill')[0];
+            //const stroke = polygonSymbolizer.getElementsByTagName('sld:Stroke')[0]; //stroke is not always present
+            symbolizer.fill = { color: fill.getElementsByTagName('sld:CssParameter')[0].textContent };
+            //symbolizer.stroke = { color: stroke.getElementsByTagName('sld:CssParameter')[0].textContent };
+            symbolizer.type = 'Polygon';
+          }
+    
+          // Check for PointSymbolizer
+          const pointSymbolizer = rules[i].getElementsByTagName('sld:PointSymbolizer')[0];
+          if (pointSymbolizer) {
+            const graphic = pointSymbolizer.getElementsByTagName('sld:Graphic')[0];
+            const mark = graphic.getElementsByTagName('sld:Mark')[0];
+            const fill = mark.getElementsByTagName('sld:Fill')[0];
+            const size = graphic.getElementsByTagName('sld:Size')[0];
+            symbolizer.mark = { fill: { color: fill.getElementsByTagName('sld:CssParameter')[0].textContent } };
+            symbolizer.size = size.textContent;
+            symbolizer.type = 'Point';
+          }
+    
+          // Check for LineSymbolizer
+          const lineSymbolizer = rules[i].getElementsByTagName('sld:LineSymbolizer')[0];
+          if (lineSymbolizer) {
+            const stroke = lineSymbolizer.getElementsByTagName('sld:Stroke')[0];
+            symbolizer.stroke = {
+              color: stroke.getElementsByTagName('sld:CssParameter')[0].textContent,
+              //width: parseFloat(stroke.querySelector('sld\\:CssParameter[name="stroke-width"]').textContent) //stroke-width is not always present
+            };
+            symbolizer.type = 'Line';
+          }
+    
+          styleJSON[i] = symbolizer;
         }
       }
 
