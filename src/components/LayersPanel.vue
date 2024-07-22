@@ -119,8 +119,8 @@
                                 <summary>{{ dataset.title }}</summary>
                                 <p class="text-caption" v-html="dataset.abstract"></p>
                                 <div class="layer-controls">
-                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility"></v-slider>
-                                    <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility" @change="() => fetchStyle(dataset.alternate)"></v-switch>
+                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility" @change="updateOpacity(dataset.pk, $event)"></v-slider>
+                                    <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility" @change="updateVisibility(dataset.pk, $event)"></v-switch>
                                 </div>
                                 <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
                                     <div v-if="style.type === 'Polygon'" class="polygon legend-item" :style="{ backgroundColor: style.fill.color, width: '10px', height: '20px', marginRight: '5px' }"></div>
@@ -134,30 +134,6 @@
                         </v-expansion-panel-text>
                     </v-expansion-panel>
                 </v-expansion-panels>
-
-                <!--Layers panel to be deprecated>
-                <v-expansion-panels>
-                    <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
-                        <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <Layers and controls>
-                                <section>
-                                    <details v-for="layer in group" :key="layer.id">
-                                        <summary>{{ layer.dataset.title }}</summary>
-                                        <p class="text-caption">{{ layer.dataset.abstract }}</p>
-                                        <div class="layer-controls">
-                                            <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
-                                            <v-switch class="layer-visibility" color="accent" v-model="layer.visibility"></v-switch>
-                                        </div>
-                                        <div class="legend overflow-y-auto">
-                                            <v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img>
-                                            <v-img :src="layer.dataset.links[0].url" :width="getLegendWidth(layer.dataset.links[0].url)" contain></v-img>
-                                        </div>
-                                    </details>
-                                </section>
-                            </v-expansion-panel-text>
-                    </v-expansion-panel>
-                </v-expansion-panels-->
             </v-card-text>
             <v-divider></v-divider>
             <v-card-actions>
@@ -315,6 +291,31 @@ export default {
     },
     methods: {
         ...mapActions(['fetchStyle']),
+        updateOpacity(datasetId, sliderValue) {
+            console.log(`Setting opacity for dataset ${datasetId} to ${sliderValue}`);
+
+            // Find the layer by datasetId using layer.dataset.pk
+            const layer = this.mapLayers.find(layer => layer.dataset && layer.dataset.pk === parseInt(datasetId));
+            if (layer) {
+                // Commit the updated opacity
+                this.$store.commit('updateLayerOpacity', { datasetId, sliderValue });
+            } else {
+                console.error(`Layer with datasetId ${datasetId} not found.`);
+            }
+        },
+        updateVisibility(datasetId) {
+            // Find the layer by datasetId using layer.dataset.pk
+            const layer = this.mapLayers.find(layer => layer.dataset && layer.dataset.pk === parseInt(datasetId));
+            if (layer) {
+                // Toggle the visibility
+                const newVisibility = !layer.visibility;
+                console.log(`Toggling visibility for dataset ${datasetId} to ${newVisibility}`);
+                // Commit the updated visibility
+                this.$store.commit('updateLayerVisibility', { datasetId, newVisibility });
+            } else {
+                console.error(`Layer with datasetId ${datasetId} not found.`);
+            }
+        },
         itemProps(item) {
             return {
                 title: item.text,

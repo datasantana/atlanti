@@ -72,7 +72,7 @@ export default {
         ...mapActions(['fetchDatasets']),
         goToMapView(pk) {
             const selectedMap = this.maps.find(map => map.pk === pk);
-            this.$store.commit('setSelectedMap', selectedMap);
+            this.$store.commit('setMap', selectedMap);
             this.fetchDatasets();
             this.$router.push({ name: 'Map' });
         },

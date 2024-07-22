@@ -40,7 +40,7 @@ export default {
     },
     async beforeMount() {
         // Destructure for cleaner access to dispatch and state
-        const { dispatch, state, commit } = this.$store;
+        const { dispatch, state } = this.$store;
 
         // Use dispatch directly from destructured store
         await dispatch('fetchSearchFeatures');
@@ -51,7 +51,7 @@ export default {
             let maps = await dispatch('fetchMaps');
             let defaultMap = maps.find(map => map.title === "Zonificación Urbana de Maracaibo");
             if (defaultMap) {
-                commit('setSelectedMap', defaultMap);
+                //commit('setMap', defaultMap);
                 await dispatch('fetchDatasets');
             }
         }

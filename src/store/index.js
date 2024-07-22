@@ -18,6 +18,7 @@ export default createStore({
       zoom: 11.6,
     },
     maps: [],
+    mapsDetails: [], // Use this to render the map cards in MapCatalog.vue
     selectedMap: null,
     categories: [],
     datasets: [],
@@ -42,20 +43,79 @@ export default createStore({
   mutations: {
     setMaps(state, maps) {
       state.maps = maps;
+      //console.log('maps in store', state.maps);
     },
-    setSelectedMap(state, map) {
-      state.selectedMap = map;
-      state.mapLayers = map.maplayers.map(layer => {
-        const legendLinks = layer.dataset.links.filter(link => link.name === 'Legend');
-        return {
-          ...layer,
-          dataset: {
-            ...layer.dataset,
-            links: legendLinks
-          }
-        };
-      });
-      //console.log('layers in store', state.mapLayers);
+    // set mapDetails with the map details of all maps. Use this to render the map cards in MapCatalog.vue
+    setAllMapDetails(state, maps) {
+      state.mapsDetails = maps.map(map => ({
+        pk: map.pk,
+        resource_type: map.resource_type,
+        attribution: map.attribution,
+        category: map.category,
+        last_updated: map.last_updated,
+        title: map.title,
+        raw_abstract: map.raw_abstract,
+        raw_purpose: map.raw_purpose,
+        regions: map.regions,
+        link: map.link, // This property should be passed as parameter in getMap method 
+        links: map.links,
+        spatial_representation_type: map.spatial_representation_type,
+        state: map.state,
+        thumbnail_url: map.thumbnail_url,
+      }));
+      console.log('map details in store', state.mapsDetails);
+    },
+    // set mapLayers with the maplayers of the selected map
+    // setSelectedMap(state, map) {
+    //   //console.log('selected map in store', map);
+    //   state.selectedMap = map;
+    //   state.mapLayers = map.maplayers.map(layer => {
+    //     const legendLinks = layer.dataset.links.filter(link => link.name === 'Legend');
+    //     return {
+    //       ...layer,
+    //       dataset: {
+    //         ...layer.dataset,
+    //         links: legendLinks
+    //       }
+    //     };
+    //   });
+    //   console.log('layers in store', state.mapLayers);
+    // },
+    setMap(state, map) {
+      //console.log('selected map in store', map);
+      state.selectedMap = {
+      pk: map.pk,
+      resource_type: map.resource_type,
+      attribution: map.attribution,
+      category: map.category,
+      last_updated: map.last_updated,
+      title: map.title,
+      raw_abstract: map.raw_abstract,
+      raw_purpose: map.raw_purpose,
+      regions: map.regions,
+      link: map.link,
+      links: map.links,
+      spatial_representation_type: map.spatial_representation_type,
+      state: map.state,
+      thumbnail_url: map.thumbnail_url,
+      maplayers: map.maplayers
+      };
+      console.log('processed map in store', state.selectedMap);
+      // set mapLayers with a reduced version of the maplayers of the selected map containig only pk, name, opacity, visibility and order
+      state.mapLayers = map.maplayers
+      console.log('layers in store', state.mapLayers);
+    },
+    updateLayerOpacity(state, { datasetId, newOpacity }) {
+      const layer = state.mapLayers.find(layer => layer.dataset && layer.dataset.pk === parseInt(datasetId));
+      if (layer) {
+        layer.opacity = newOpacity;
+      }
+    },
+    updateLayerVisibility(state, { datasetId, newVisibility }) {
+      const layer = state.mapLayers.find(layer => layer.dataset && layer.dataset.pk === parseInt(datasetId));
+      if (layer) {
+        layer.visibility = newVisibility;
+      }
     },
     clearSelectedMap(state) {
       state.selectedMap = null;
@@ -65,7 +125,7 @@ export default createStore({
       const filteredCategories = categories.filter(category => category.count > 0);
       // Set the state with the filtered categories
       state.categories = filteredCategories;
-      console.log('filtered categories in store', state.categories);
+      //console.log('filtered categories in store', state.categories);
     },
     setDatasets(state, datasets) {
       // Map over datasets and find the corresponding category for each dataset
@@ -86,8 +146,29 @@ export default createStore({
       // If no matching category is found, return the original dataset object
       return dataset;
       });
+      for (const dataset of updatedDatasets) {
+        // check if dataset is present in mapLayers
+        const found = state.mapLayers.find(layer => parseInt(layer.dataset.pk) === parseInt(dataset.pk));
+        // if present add a property to the dataset object called "mapLayer" set to true, else set to false
+        dataset.mapLayer = found ? true : false;
+        // if present add layer.dataset.order layer.dataset.visibility and layer.dataset.opacity to the dataset object
+        if (found) {
+          dataset.order = found.order;
+          dataset.visibility = found.visibility;
+          dataset.opacity = found.opacity;
+        }// else set those to null
+        else {
+          dataset.order = null;
+          dataset.visibility = null;
+          dataset.opacity = null;
+        }
+      }
       state.datasets = updatedDatasets;
       console.log('datasets in store', state.datasets);
+      // for every dataset run fetchStyle
+      for (const dataset of state.datasets) {
+        this.dispatch('fetchStyle', dataset.alternate);
+      }
     },
     setStyles(state, style) {
       // parse xml string to xml document
@@ -95,12 +176,12 @@ export default createStore({
       const xmlDoc = parser.parseFromString(style, 'text/xml');
       // maps attributes and values to a JSON object
       const styleJSON = {};
-      console.log('xmlDoc', xmlDoc);
+      //console.log('xmlDoc', xmlDoc);
       const layerName = xmlDoc.getElementsByTagName('sld:Name')[0].textContent;
-      console.log('layerName', layerName);
+      //console.log('layerName', layerName);
       const featureTypeStyles = xmlDoc.getElementsByTagName('sld:FeatureTypeStyle');
       const rules = featureTypeStyles[0].getElementsByTagName('sld:Rule');
-      console.log('rules', rules);
+      //console.log('rules', rules);
       // find all rules
       for (let i = 0; i < rules.length; i++) {
         const nameElement = rules[i].getElementsByTagName('sld:Name')[0];
@@ -152,7 +233,7 @@ export default createStore({
         return { ...acc, [Number(key)]: modifiedStyle };
       }, {});
       state.styles = { ...state.styles, [layerName]: allStyles };
-      console.log('styles in store', state.styles);
+      //console.log('styles in store', state.styles);
     },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326
@@ -162,10 +243,6 @@ export default createStore({
     },
     setMapZoom(state, zoom) {
       state.mapLocation.zoom = zoom;
-    },
-    // seems to not being used
-    setMapLayers(state, mapLayers) {
-      state.mapLayers = mapLayers;
     },
     setMapDatasets(state, datasets) {
       state.mapDatasets = datasets;
@@ -282,14 +359,32 @@ export default createStore({
     // other mutations...
   },
   actions: {
+    // Get all maps from GeoNode
     async fetchMaps({ commit }) {
       const url = process.env.VUE_APP_NODE_URL;
       const api = process.env.VUE_APP_NODE_API_ENDPOINT;
       const response = await axios.get(`${url}${api}maps/`);
-      commit('setMaps', response.data.maps);
+      commit('setMaps', response.data.maps); // To be deprecated
+      commit('setAllMapDetails', response.data.maps);
       // Return the maps
       return response.data.maps;
     },
+    // Get a single map from GeoNode. To be deprecated
+    async fetchMap({ commit }, mapId) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      const response = await axios.get(`${url}${api}maps/${mapId}`);
+      commit('setMap', response.data);
+      // Return the map
+      return response.data;
+    },
+    // Get a single map from GeoNode. To be implemented in the future
+    getMap({ commit }, link) {
+      axios.get(link).then(response => {
+        commit('setMap', response.data);
+      });
+    },
+    // Get all categories from GeoNode
     async fetchCategories({ commit, dispatch }) {
       const url = process.env.VUE_APP_NODE_URL;
       const api = process.env.VUE_APP_NODE_API_ENDPOINT;
@@ -309,6 +404,24 @@ export default createStore({
       // After setting categories, dispatch fetchDatasets to fetch datasets
       await dispatch('fetchAllDatasets');
     },
+    // Implement this method to fetch all datasets -- add commit('setMapDatasets', datasets) to the fetchAllDatasets method
+    async fetchAllDatasets({ commit }) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      let page = 1;
+      let datasets = [];
+      let total = 0;
+
+      do {
+        const response = await axios.get(`${url}${api}datasets/?page=${page}`);
+        datasets.push(...response.data.datasets);
+        total = response.data.total;
+        page++;
+      } while (datasets.length < total);
+
+      //console.log('datasets to commit', datasets);
+      commit('setDatasets', datasets);
+    },
     fetchStyle({ commit }, layerName) {
       const wmsURL = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
       const getStyleRequest = `${wmsURL}?request=GetStyles&layers=${layerName}&service=wms&version=1.1.1`;
@@ -318,6 +431,7 @@ export default createStore({
         commit('setStyles', response.data);
       });
     },
+    // Get search-result features to be added to the map
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
   
@@ -335,6 +449,7 @@ export default createStore({
         });
       }
     },
+    // Get place-search features to be added to the map
     async fetchSearchFeatures({commit}) {
       try {
         const wfsUrl = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
@@ -361,6 +476,7 @@ export default createStore({
         console.error('Failed to fetch features:', error);
       }
     },
+    // Get filter features to be added to the map - this method coul be deprecated
     async fetchFilterFeatures({commit}) {
       try {
         const wfsUrl = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
@@ -395,24 +511,7 @@ export default createStore({
       //console.log('datasets in store', state.mapDatasets);
       commit('joinCategoryToMapLayers');
     },
-    // Implement this method to fetch all datasets -- add commit('setMapDatasets', datasets) to the fetchAllDatasets method
-    async fetchAllDatasets({ commit }) {
-      const url = process.env.VUE_APP_NODE_URL;
-      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
-      let page = 1;
-      let datasets = [];
-      let total = 0;
-
-      do {
-        const response = await axios.get(`${url}${api}datasets/?page=${page}`);
-        datasets.push(...response.data.datasets);
-        total = response.data.total;
-        page++;
-      } while (datasets.length < total);
-
-      //console.log('datasets to commit', datasets);
-      commit('setDatasets', datasets);
-    },
+    
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);
       //console.log('traced feature in store', geometry);
