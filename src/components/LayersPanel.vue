@@ -119,7 +119,7 @@
                                 <summary>{{ dataset.title }}</summary>
                                 <p class="text-caption" v-html="dataset.abstract"></p>
                                 <div class="layer-controls">
-                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility" @change="updateOpacity(dataset.pk, $event)"></v-slider>
+                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility" @change="updateOpacity(dataset.pk, Number($event.target.value))"></v-slider>
                                     <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility" @change="updateVisibility(dataset.pk, $event)"></v-switch>
                                 </div>
                                 <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
