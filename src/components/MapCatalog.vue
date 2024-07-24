@@ -21,8 +21,8 @@
         </div>
         <div class="map-cards">
             <v-row>
-                <v-col cols="12" md="12">
-                    <v-card v-for="map in maps" :key="map.id" variant="flat" class="mx-auto bg-secondary on-secondary" max-width="900">
+                <v-col cols="4" md="4" v-for="map in maps" :key="map.id">
+                    <v-card variant="flat" class="mx-auto bg-secondary on-secondary fixed-height-card" max-width="900">
                         <v-card-item>
                             <div class="text-overline mb-1" color="accent">
                                 Mapa | {{ map.attribution }}
@@ -129,5 +129,11 @@ a {
     grid-row-start: 3;
     grid-column-start: 1;
     grid-column-end: 4;
+}
+
+.fixed-height-card {
+  height: 450px; /* Adjust the height as needed */
+  display: flex;
+  flex-direction: column;
 }
 </style>

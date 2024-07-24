@@ -11,11 +11,11 @@ import * as turf from '@turf/turf';
 export default createStore({
   state: {
     mapLocation: {
-      lng: -71.6930587033,
-      lat: 10.6775887114,
+      lng: -69.8862049827,
+      lat: 18.4733777998,
       bearing: 0,
       pitch: 0,
-      zoom: 11.6,
+      zoom: 15.25,
     },
     maps: [],
     mapsDetails: [], // Use this to render the map cards in MapCatalog.vue
@@ -367,6 +367,7 @@ export default createStore({
       commit('setMaps', response.data.maps); // To be deprecated
       commit('setAllMapDetails', response.data.maps);
       // Return the maps
+      console.log('maps in store', response.data.maps);
       return response.data.maps;
     },
     // Get a single map from GeoNode. To be deprecated
@@ -458,7 +459,7 @@ export default createStore({
             service: 'WFS',
             version: '2.0.0',
             request: 'GetFeature',
-            typeName: 'geonode:sectores_barrios_urb',
+            typeName: 'geonode:juntas_vecinos',
             outputFormat: 'application/json',
             srsName: 'EPSG:4326',
             // Add any other parameters you need...
@@ -485,7 +486,7 @@ export default createStore({
             service: 'WFS',
             version: '2.0.0',
             request: 'GetFeature',
-            typeName: 'maracaibo:zonifica_ordenanza',
+            typeName: 'geonode:zonas_estructuracion',
             outputFormat: 'application/json',
             srsName: 'EPSG:3857',
             // Add any other parameters you need...
