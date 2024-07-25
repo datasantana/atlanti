@@ -119,7 +119,7 @@
                                 <summary>{{ dataset.title }}</summary>
                                 <p class="text-caption" v-html="dataset.abstract"></p>
                                 <div class="layer-controls">
-                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility" @change="updateOpacity(dataset.pk, Number($event.target.value))"></v-slider>
+                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="dataset.opacity" :disabled="!dataset.visibility" @input="updateOpacity(dataset.pk, $event)"></v-slider>
                                     <v-switch class="layer-visibility" color="accent" v-model="dataset.visibility" @change="updateVisibility(dataset.pk, $event)"></v-switch>
                                 </div>
                                 <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
@@ -128,7 +128,7 @@
                                     <div v-if="style.type === 'Point'" class="point legend-item" :style="{ borderRadius: '5px', backgroundColor: style.mark.fill.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '5px' }"></div>
                                     <div class="legend-item">{{ style.name }}</div>
                                     <v-spacer></v-spacer>
-                                    <input class="legend-item" type="checkbox" v-model="style.selected" checked>
+                                    <input class="legend-item" type="checkbox" v-model="style.visibility" :checked="style.visibility" @change="event => processCqlFilter(event, dataset.alternate, style.name)">
                                 </div>
                             </details>
                         </v-expansion-panel-text>
@@ -157,7 +157,7 @@
 
 <script>
 import proj4 from 'proj4';
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions, mapMutations } from 'vuex';
 
 // Define the source and destination projections
 const sourceProjection4326 = 'EPSG:4326';
@@ -291,17 +291,18 @@ export default {
     },
     methods: {
         ...mapActions(['fetchStyle']),
-        updateOpacity(datasetId, sliderValue) {
-            console.log(`Setting opacity for dataset ${datasetId} to ${sliderValue}`);
+        ...mapMutations(['setCQLfilter']),
+        updateOpacity(dataset, value) {  
+            console.log(`Setting opacity ${value} to ${dataset}`);
 
             // Find the layer by datasetId using layer.dataset.pk
-            const layer = this.mapLayers.find(layer => layer.dataset && layer.dataset.pk === parseInt(datasetId));
-            if (layer) {
-                // Commit the updated opacity
-                this.$store.commit('updateLayerOpacity', { datasetId, sliderValue });
-            } else {
-                console.error(`Layer with datasetId ${datasetId} not found.`);
-            }
+            //const layer = this.mapLayers.find(layer => layer.dataset && layer.dataset.pk === parseInt(datasetId));
+            //if (layer) {
+            //    // Commit the updated opacity
+            //    this.$store.commit('updateLayerOpacity', { datasetId, sliderValue });
+            //} else {
+            //    console.error(`Layer with datasetId ${datasetId} not found.`);
+            //}
         },
         updateVisibility(datasetId) {
             // Find the layer by datasetId using layer.dataset.pk
@@ -315,6 +316,36 @@ export default {
             } else {
                 console.error(`Layer with datasetId ${datasetId} not found.`);
             }
+        },
+        updateCheckbox(event, datasetName, styleName) {
+            const newValue = event.target.checked;
+            console.log(`Visibility changed to ${styleName} in ${datasetName} to: ${newValue}`);
+            // find the style with same datasetName as key
+            const style = this.styles[datasetName]
+            console.log(style);
+        }, // this is for checking if corresponding style state is changing or not
+        processCqlFilter(event, datasetName, styleName) {
+             // Process the CQL filter 
+             const newValue = event.target.checked;
+             console.log(`Visibility changed to ${styleName} in ${datasetName} to: ${newValue}`);
+             const style = this.styles[datasetName];
+             console.log(style);
+            // get the style objects that has visibility property set to true
+            const visibleStyles = Object.values(style).filter(item => item.visibility);
+            console.log(visibleStyles);
+            // get the filter property of the visible styles
+            const filters = visibleStyles.map(item => item.filter);
+            console.log(filters);
+            // return list of unique propertyName from the filters object
+            const propertyNames = [...new Set(filters.map(filter => filter.propertyName))];
+            const propertyValues = filters.map(filter => filter.literal);
+            // transform propertyNames and propertyValues to CQL string
+            const cqlString = `CQL_FILTER=${propertyNames.toString()} IN (${propertyValues.toString()})`;
+            console.log(cqlString);
+            // create object with datasetName as key and a query property with cqlString as value
+            const cqlFilter = { datasetName, query: cqlString };
+            // commit the cqlFilter object to the store using setCQLfilter imported mutation
+            this.setCQLfilter(cqlFilter);
         },
         itemProps(item) {
             return {

@@ -31,12 +31,14 @@
                         <v-divider></v-divider>
                         <v-img :src="map.thumbnail_url" class="map-thumbnail" cover></v-img>
                         <v-card-title class="text-h6 mb-1">{{ map.title }}</v-card-title>
-                        <v-card-text class="text-caption" color="accent">{{ map.raw_purpose }}</v-card-text>
+                        <v-card-text class="text-caption" color="accent">{{ map.raw_abstract }}</v-card-text>
                         <!-- card content... -->
                         <v-divider></v-divider>
                         <v-card-actions class="d-flex justify-space-between">
                             <v-btn color="accent" @click="goToMapView(map.pk)">Ver mapa</v-btn>
-                            <v-btn icon @click="openDetails(map.detail_url)">
+                            <v-btn icon @click="openDetails(map.links[5].url)">
+                                <v-tooltip activator="parent" location="top">View metadata
+                                </v-tooltip>
                                 <v-icon color="error">mdi-information</v-icon>
                             </v-btn>
                         </v-card-actions>
@@ -77,7 +79,7 @@ export default {
             this.$router.push({ name: 'Map' });
         },
         openDetails(detailUrl) {
-        window.open(`${detailUrl}/metadata_detail`, '_blank');
+            window.open(detailUrl, '_blank');
         },
     },
 };

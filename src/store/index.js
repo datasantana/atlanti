@@ -17,12 +17,13 @@ export default createStore({
       pitch: 0,
       zoom: 15.25,
     },
-    maps: [],
+    maps: [], // Queep this private
     mapsDetails: [], // Use this to render the map cards in MapCatalog.vue
     selectedMap: null,
     categories: [],
     datasets: [],
     styles: [],
+    cqlFilters: [],
     mapLayers: [],
     mapDatasets: [],
     searchFeatures: [],
@@ -62,6 +63,7 @@ export default createStore({
         spatial_representation_type: map.spatial_representation_type,
         state: map.state,
         thumbnail_url: map.thumbnail_url,
+        maplayers: map.maplayers
       }));
       console.log('map details in store', state.mapsDetails);
     },
@@ -181,7 +183,7 @@ export default createStore({
       //console.log('layerName', layerName);
       const featureTypeStyles = xmlDoc.getElementsByTagName('sld:FeatureTypeStyle');
       const rules = featureTypeStyles[0].getElementsByTagName('sld:Rule');
-      //console.log('rules', rules);
+      console.log('rules', rules[0]);
       // find all rules
       for (let i = 0; i < rules.length; i++) {
         const nameElement = rules[i].getElementsByTagName('sld:Name')[0];
@@ -223,6 +225,19 @@ export default createStore({
             };
             symbolizer.type = 'Line';
           }
+
+          const filter = rules[i].getElementsByTagName('ogc:Filter')[0];
+          if (filter) {
+            const propertyIsEqualTo = filter.getElementsByTagName('ogc:PropertyIsEqualTo')[0];
+            if (propertyIsEqualTo) {
+              const propertyName = propertyIsEqualTo.getElementsByTagName('ogc:PropertyName')[0].textContent;
+              const literal = propertyIsEqualTo.getElementsByTagName('ogc:Literal')[0].textContent;
+              symbolizer.filter = { propertyName: propertyName, literal: literal };
+            }
+          }
+
+          // add a visibility property to the symbolizer set to true by default
+          symbolizer.visibility = true;
     
           styleJSON[i] = symbolizer;
         }
@@ -233,7 +248,18 @@ export default createStore({
         return { ...acc, [Number(key)]: modifiedStyle };
       }, {});
       state.styles = { ...state.styles, [layerName]: allStyles };
-      //console.log('styles in store', state.styles);
+      console.log('styles in store', state.styles);
+    },
+    setCQLfilter(state, filters) {
+      // check if filters.datasetName is present in cqlFilters
+      const index = state.cqlFilters.findIndex(filter => filter.datasetName === filters.datasetName);
+      // if present replace the filter if not push the filter
+      if (index !== -1) {
+        state.cqlFilters[index] = filters;
+      } else {
+        state.cqlFilters.push(filters);
+      }
+      console.log('cqlFilters in store', state.cqlFilters);
     },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326

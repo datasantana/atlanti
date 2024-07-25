@@ -1,6 +1,6 @@
 <template>
   <div class="home d-flex flex-column">
-    <MapCatalog :maps="maps" />
+    <MapCatalog :maps="mapsDetails" />
   </div>
 </template>
 
@@ -14,7 +14,7 @@ export default {
     MapCatalog,
   },
   computed: {
-    ...mapState(['maps']),
+    ...mapState(['mapsDetails']),
   },
   mounted() {
     this.$store.dispatch('fetchMaps');
