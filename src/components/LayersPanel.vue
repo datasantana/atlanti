@@ -340,7 +340,7 @@ export default {
             const propertyNames = [...new Set(filters.map(filter => filter.propertyName))];
             const propertyValues = filters.map(filter => filter.literal);
             // transform propertyNames and propertyValues to CQL string
-            const cqlString = `CQL_FILTER=${propertyNames.toString()} IN (${propertyValues.toString()})`;
+            const cqlString = `${propertyNames.toString()} IN (${propertyValues.toString()})`;
             console.log(cqlString);
             // create object with datasetName as key and a query property with cqlString as value
             const cqlFilter = { datasetName, query: cqlString };

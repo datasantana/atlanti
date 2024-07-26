@@ -36,9 +36,10 @@ export default {
         return {
             map: null,
             currentVectorLayer: null,
+            wmsLayer: null,
         }
     },
-    async beforeMount() {
+    async beforeMount(commit) {
         // Destructure for cleaner access to dispatch and state
         const { dispatch, state } = this.$store;
 
@@ -49,15 +50,15 @@ export default {
         if (state.mapLayers.length === 0 && state.mapDatasets.length === 0) {
             // Fetch the default map
             let maps = await dispatch('fetchMaps');
-            let defaultMap = maps.find(map => map.title === "Zonificación Urbana de Maracaibo");
+            let defaultMap = maps.find(map => map.title === "Normatividad urbana de Ciudad Colonial");
             if (defaultMap) {
-                //commit('setMap', defaultMap);
+                commit('setMap', defaultMap);
                 await dispatch('fetchDatasets');
             }
         }
     },
     computed: {
-        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate', 'tracedFeature', 'features']),
+        ...mapState(['mapLayers', 'mapLocation', 'markedCoordinate', 'tracedFeature', 'features', 'cqlFilters']),
         sortedMapLayers() {
             return [...this.mapLayers].sort((a, b) => a.order - b.order);
         },
@@ -74,6 +75,12 @@ export default {
                 });
             },
             deep: true,
+        },
+        cqlFilters: {
+            handler(newFilters) {
+                this.updateWmsLayer(newFilters);
+            },
+            deep: true
         },
         markedCoordinate(newVal, oldVal) {
             // Direct comparison might be unnecessary if Vue guarantees this watcher is only triggered on actual changes.
@@ -166,6 +173,24 @@ export default {
     methods: {
         ...mapMutations(['setMarkedCoordinate', 'openSecondDrawer']),
         ...mapActions(['fetchFeatures']),
+        updateWmsLayer(filters) {
+            if (!this.map) return;
+
+            filters.forEach(filter => {
+            const layer = this.map.getLayers().getArray().find(layer => {
+                const source = layer.getSource();
+                return source instanceof TileWMS && source.getParams().LAYERS === filter.datasetName;
+            });
+
+            if (layer) {
+                const source = layer.getSource();
+                source.updateParams({
+                CQL_FILTER: filter.query
+                });
+                source.refresh();
+            }
+            });
+        },
         initMap() {
             try {
                 const { lng, lat, zoom } = this.mapLocation;
