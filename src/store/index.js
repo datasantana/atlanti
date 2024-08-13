@@ -6,7 +6,6 @@ import axios from 'axios';
 import { toLonLat } from 'ol/proj';
 
 import * as turf from '@turf/turf';
-//import { set } from 'core-js/core/dict';
 
 export default createStore({
   state: {
@@ -20,6 +19,8 @@ export default createStore({
     maps: [],
     selectedMap: null,
     mapLayers: [],
+    categories: [],
+    datasets: [],
     mapDatasets: [],
     searchFeatures: [],
     filterFeatures: [],
@@ -68,6 +69,14 @@ export default createStore({
     },
     setMapLayers(state, mapLayers) {
       state.mapLayers = mapLayers;
+    },
+    setCategories(state, categories) {
+      state.categories = categories.filter(category => category.count > 0);
+      console.log('categories in store', state.categories);
+    },
+    setDatasets(state, datasets) {
+      state.datasets = datasets;
+      console.log('datasets in store', state.datasets);
     },
     setMapDatasets(state, datasets) {
       state.mapDatasets = datasets;
@@ -256,6 +265,59 @@ export default createStore({
         console.error('Failed to fetch features:', error);
       }
     },
+    async fetchCategories({ commit }) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      let page = 1;
+      let allCategories = [];
+      let total = 0;
+
+      try {
+        do {
+          const response = await axios.get(`${url}${api}categories/`, {
+            params: { page }
+          });
+    
+          if (page === 1) {
+            total = response.data.total;
+          }
+    
+          allCategories = allCategories.concat(response.data.categories);
+          page++;
+        } while (allCategories.length < total);
+    
+        commit('setCategories', allCategories);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    },
+    async fetchAllDatasets({ commit }) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      let page = 1;
+      let allDatasets = [];
+      let total = 0;
+      
+      try {
+        do {
+          const response = await axios.get(`${url}${api}datasets/`, {
+            params: { page }
+          });
+    
+          if (page === 1) {
+            total = response.data.total;
+          }
+    
+          allDatasets = allDatasets.concat(response.data.datasets);
+          page++;
+        } while (allDatasets.length < total);
+    
+        commit('setDatasets', allDatasets);
+      } catch (error) {
+        console.error('Failed to fetch datasets:', error);
+      }
+    },
+    // Fetch datasets for each map layer to be deprecated as we list all available datasets
     async fetchDatasets({ commit, state }) {
       const datasets = [];
       for (const layer of state.mapLayers) {

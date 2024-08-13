@@ -98,41 +98,89 @@
                     </v-window-item>
                 </v-window>
             </v-card-text>
-            <v-divider></v-divider>
-            <v-card-title>
-                <v-row class="d-flex align-center justify-space-between">
-                    <v-col cols="10">
-                        <div class="text-h6 mb-1">Capas</div>
-                    </v-col>
-                    <v-col cols="2">
-                        <v-icon left>mdi-layers</v-icon>
-                    </v-col>
-                </v-row>
-            </v-card-title>
+        </v-card>
+            
+        <v-divider></v-divider>
+
+        <v-card variant="flat" class="mx-auto bg-secondary on-secondary" max-width="450">
+            <v-tabs
+                v-model="tabi"
+                bg-color="primary"
+                align-tabs="center"
+                stacked
+                >
+                <v-tab value="layers">
+                    <v-icon icon="mdi-layers"></v-icon>
+                    Capas
+                </v-tab>
+                <v-tab value="add-layers">
+                    <v-icon icon="mdi-layers-plus"></v-icon>
+                    Añadir capas
+                </v-tab>
+            </v-tabs>
             <v-card-text style="max-height: 400px; overflow-y: auto;">
-                <!--Layers panel-->
-                <v-expansion-panels>
-                    <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
-                        <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <!--Layers and controls-->
-                                <section>
-                                    <details v-for="layer in group" :key="layer.id">
-                                        <summary>{{ layer.dataset.title }}</summary>
-                                        <p class="text-caption">{{ layer.dataset.abstract }}</p>
-                                        <div class="layer-controls">
-                                            <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
-                                            <v-switch class="layer-visibility" color="accent" v-model="layer.visibility"></v-switch>
-                                        </div>
-                                        <div class="legend overflow-y-auto">
-                                            <!--v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img-->
-                                            <v-img :src="layer.dataset.links[0].url" :width="getLegendWidth(layer.dataset.links[0].url)" contain></v-img>
-                                        </div>
-                                    </details>
-                                </section>
-                            </v-expansion-panel-text>
-                    </v-expansion-panel>
-                </v-expansion-panels>
+                <v-window v-model="tabi">
+                    <v-window-item value="layers">
+                        <!--Layers panel-->
+                        <v-expansion-panels>
+                            <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
+                                <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <!--Layers and controls-->
+                                        <section>
+                                            <details v-for="layer in group" :key="layer.id">
+                                                <summary>{{ layer.dataset.title }}</summary>
+                                                <p class="text-caption">{{ layer.dataset.abstract }}</p>
+                                                <div class="layer-controls">
+                                                    <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
+                                                    <v-switch class="layer-visibility" color="accent" v-model="layer.visibility"></v-switch>
+                                                </div>
+                                                <div class="legend overflow-y-auto">
+                                                    <!--v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img-->
+                                                    <v-img :src="layer.dataset.links[0].url" :width="getLegendWidth(layer.dataset.links[0].url)" contain></v-img>
+                                                </div>
+                                            </details>
+                                        </section>
+                                    </v-expansion-panel-text>
+                            </v-expansion-panel>
+                        </v-expansion-panels>
+                    </v-window-item>
+                    <v-window-item value="add-layers">
+                        <v-expansion-panels>
+                            <v-expansion-panel v-for="category in categories" :key="category.identifier">
+                                <v-expansion-panel-title>{{ category.gn_description }}</v-expansion-panel-title>
+                                <v-expansion-panel-text v-for="dataset in filteredDatasets(category.identifier)" :key="dataset.pk">
+                                    <v-card variant="tonal" color="primary" class="mx-auto">
+                                        <v-img
+                                            height="150"
+                                            :src="dataset.thumbnail_url"
+                                            cover
+                                        ></v-img>
+                                        <v-card-item>
+                                            <div class="text-overline mb-1">
+                                                Dataset
+                                            </div>
+                                            <v-row>
+                                                <v-col cols="10">
+                                                    <div class="text-h6 mb-1">
+                                                        {{ dataset.title }}
+                                                    </div>
+                                                </v-col>
+                                                <v-col cols="2">
+                                                    <v-checkbox-btn
+                                                        v-model="enabled"
+                                                        class="pe-2"
+                                                    ></v-checkbox-btn>
+                                                </v-col>
+                                            </v-row>
+                                            <div class="text-caption">{{ dataset.raw_abstract }}</div>
+                                        </v-card-item>
+                                    </v-card>
+                                </v-expansion-panel-text>
+                            </v-expansion-panel>
+                        </v-expansion-panels>
+                    </v-window-item>
+                </v-window>
             </v-card-text>
             <v-divider></v-divider>
             <v-card-actions>
@@ -177,6 +225,8 @@ export default {
                 { text: 'WGS84', value: 'EPSG:4326' },
                 { text: 'REGVEN', value: 'EPSG:2202' },
             ],
+            selecteDataset: null,
+            enabled: false,
             session: {
                 name: 'Sistema de Información Territorial - SIT',
                 site: 'Visor de Mapas | Consulta Ciudadana',
@@ -193,13 +243,19 @@ export default {
                 },
             ],
             tab: null,
+            tabi: null,
             imageDimensions: {},
             selectedPlace: null,
             selectedZone: null,
         };
     },
     computed: {
-        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation']),
+        ...mapState(['mapLayers', 'selectedMap', 'searchFeatures', 'filterFeatures', 'mapDatasets', 'mapLocation', 'datasets', 'categories']),
+        filteredDatasets() {
+            return (categoryId) => {
+                return this.datasets.filter(dataset => dataset.category && dataset.category.identifier === categoryId);
+            };
+        },
         reprojectedLocation2202() {
             if (this.mapLocation && this.mapLocation.lng && this.mapLocation.lat) {
                 const [lng2202, lat2202] = converter4326to2202.forward([this.mapLocation.lng, this.mapLocation.lat]);
@@ -279,6 +335,10 @@ export default {
     },
     mounted() {
         this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
+        // trigger fetch categories from vuex store
+        this.$store.dispatch('fetchCategories');
+        // trigger fetch datasets from vuex store
+        this.$store.dispatch('fetchAllDatasets');
     },
     methods: {
         itemProps(item) {
