@@ -158,7 +158,7 @@
                                         ></v-img>
                                         <v-card-item>
                                             <div class="text-overline mb-1">
-                                                Dataset
+                                                Dataset | {{ dataset.attribution }}
                                             </div>
                                             <v-row>
                                                 <v-col cols="10">
@@ -167,10 +167,8 @@
                                                     </div>
                                                 </v-col>
                                                 <v-col cols="2">
-                                                    <v-checkbox-btn
-                                                        v-model="enabled"
-                                                        class="pe-2"
-                                                    ></v-checkbox-btn>
+                                                    <v-tooltip activator="parent" location="top">Añadir esta capa</v-tooltip>
+                                                    <v-btn size="x-small" icon="mdi-plus" color="accent" variant="tonal"></v-btn>
                                                 </v-col>
                                             </v-row>
                                             <div class="text-caption">{{ dataset.raw_abstract }}</div>
