@@ -94,6 +94,7 @@ export default {
                 // Zoom to the new coordinates
                 this.map.getView().animate({
                 center: coord,
+                zoom: 18,
                 });
 
                 // Trigger openSecondDrawer and fetchFeatures
