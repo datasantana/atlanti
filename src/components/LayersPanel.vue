@@ -69,7 +69,7 @@
                                 </v-form>
                                 <v-form v-if="currentCRS === 'EPSG:4326'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="mapLocation.lat"
+                                    v-model="location.lat"
                                     :label="labels[0]"
                                     :rules="rules"
                                     ></v-text-field>
@@ -85,7 +85,7 @@
                                 </v-form>
                                 <v-form v-if="currentCRS === 'EPSG:4326'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="mapLocation.lng"
+                                    v-model="location.lng"
                                     :label="labels[1]"
                                     :rules="rules"
                                     ></v-text-field>
@@ -189,6 +189,13 @@ export default {
             reprojectedMapLocation: {
                 lng: 205383.1024574745,
                 lat: 1181614.2195356246,
+            },
+            location: {
+                lng: -71.6930587033,
+                lat: 10.6775887114,
+                bearing: 0,
+                pitch: 0,
+                zoom: 11.6,
             },
             rules: [
                 value => {
