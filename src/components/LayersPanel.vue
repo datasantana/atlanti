@@ -62,7 +62,7 @@
                             <v-col cols="5">
                                 <v-form v-if="currentCRS === 'EPSG:2202'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="reprojectedLocation2202.lat"
+                                    v-model="reprojectedMapLocation.lat"
                                     :label="labels[0]"
                                     :rules="rules"
                                     ></v-text-field>
@@ -78,7 +78,7 @@
                             <v-col cols="5">
                                 <v-form v-if="currentCRS === 'EPSG:2202'" @submit.prevent="reprojectAndEmit">
                                     <v-text-field
-                                    v-model="reprojectedLocation2202.lng"
+                                    v-model="reprojectedMapLocation.lng"
                                     :label="labels[1]"
                                     :rules="rules"
                                     ></v-text-field>
@@ -186,6 +186,10 @@ export default {
                 map: 'Ordenanza de Zonificación Urbana',
 
             },
+            reprojectedMapLocation: {
+                lng: 205383.1024574745,
+                lat: 1181614.2195356246,
+            },
             rules: [
                 value => {
                     if (value) return true
@@ -277,6 +281,15 @@ export default {
             return [];
         },
     },
+    watch: {
+        //mapLocation(newLocation) {
+        //    if (newLocation && newLocation.lng && newLocation.lat) {
+        //        const [lng2202, lat2202] = converter4326to2202.forward([this.mapLocation.lng, this.mapLocation.lat]);
+        //        return { lng: lng2202, lat: lat2202 };
+        //    }
+        //    return null;
+        //},
+    },
     mounted() {
         this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
     },
@@ -308,7 +321,7 @@ export default {
         },
         reprojectAndEmit() {
             if (this.currentCRS === 'EPSG:2202') {
-                const searchCoordinate = [this.reprojectedLocation2202.lng, this.reprojectedLocation2202.lat];
+                const searchCoordinate = [parseFloat(this.reprojectedMapLocation.lng), parseFloat(this.reprojectedMapLocation.lat)];
                 this.$store.commit('setMarkedCoordinate', searchCoordinate);
             } else {
                 // reproject to 2202
