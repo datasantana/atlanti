@@ -1,17 +1,19 @@
 <template>
   <v-app>
-    <v-app-bar class="bg-secondary" :elevation="0">
+    <v-app-bar class="bg-secondary" :elevation="0" density="compact">
       <v-img :src="logo" max-height="35" max-width="150" class="mr-0"></v-img>
-      <v-toolbar-title color="accent">{{ title }}</v-toolbar-title>
+      <v-app-bar-title>{{ title }}</v-app-bar-title>
 
-      <v-spacer></v-spacer>
-
-      <v-btn icon>
-        <v-icon color="error">mdi-information</v-icon>
-      </v-btn>
+      <template v-slot:append>
+        <v-btn icon>
+          <v-icon :class="['mdi', 'mdi-dots-vertical']"></v-icon>
+        </v-btn>
+      </template>
     </v-app-bar>
-    <v-main class="router-container">
-      <router-view/>
+    <v-main>
+      <v-container fluid class="fill-height pa-0 ma-0 bg-blue-grey-lighten-5">
+        <router-view/>
+      </v-container>
     </v-main>
   </v-app>
 </template>
@@ -21,18 +23,19 @@ export default {
   data() {
     return {
       logo: require('@/assets/alcaldia-de-maracaibo-logo-web.png'), // Add your logo here
+      title: 'Visor Consulta Ciudadana', // Change the title of the app
     };
-  },
-  computed: {
-    title() {
-      return this.$store.state.selectedMap ? this.$store.state.selectedMap.title : 'Visor Consulta Ciudadana'; // Change the title of the app
-    },
   },
 };
 </script>
 
 <style scoped>
-.router-container {
-  height: calc(100vh - 64px); /* Adjust as needed */
+html, body, #app {
+  height: 100%;
+  margin: 0;
+}
+
+.fill-height {
+  height: 100%;
 }
 </style>

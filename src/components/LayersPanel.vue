@@ -99,6 +99,7 @@
                 </v-window>
             </v-card-text>
             <v-divider></v-divider>
+            
             <v-card-title>
                 <v-row class="d-flex align-center justify-space-between">
                     <v-col cols="10">
@@ -109,31 +110,8 @@
                     </v-col>
                 </v-row>
             </v-card-title>
-            <v-card-text style="max-height: 400px; overflow-y: auto;">
-                <!--Layers panel-->
-                <v-expansion-panels>
-                    <v-expansion-panel v-for="(group, category) in groupedLayers" :key="category" class="v-card">
-                        <v-expansion-panel-title>{{ category }}</v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <!--Layers and controls-->
-                                <section>
-                                    <details v-for="layer in group" :key="layer.id">
-                                        <summary>{{ layer.dataset.title }}</summary>
-                                        <p class="text-caption">{{ layer.dataset.abstract }}</p>
-                                        <div class="layer-controls">
-                                            <v-slider class="layer-opacity" color="accent" min=0 max=1 v-model="layer.opacity" :disabled="!layer.visibility"></v-slider>
-                                            <v-switch class="layer-visibility" color="accent" v-model="layer.visibility"></v-switch>
-                                        </div>
-                                        <div class="legend overflow-y-auto">
-                                            <!--v-img :src="layer.dataset.links[0].url" width="70%" contain ></v-img-->
-                                            <v-img :src="layer.dataset.links[0].url" :width="getLegendWidth(layer.dataset.links[0].url)" contain></v-img>
-                                        </div>
-                                    </details>
-                                </section>
-                            </v-expansion-panel-text>
-                    </v-expansion-panel>
-                </v-expansion-panels>
-            </v-card-text>
+            <!--layers component-->
+            <LayersComponent />
             <v-divider></v-divider>
             <v-card-actions>
                 <v-row class="d-flex align-center justify-space-between">
@@ -155,6 +133,7 @@
 </template>
 
 <script>
+import LayersComponent from "@/components/LayersComponent.vue";
 import proj4 from 'proj4';
 import { mapState } from 'vuex';
 
@@ -170,6 +149,9 @@ const converter4326to2202 = proj4(sourceProjection4326, destinationProjection220
 
 export default {
     name: 'LayersPanel',
+    components: {
+        LayersComponent,
+    },
     data() {
         return {
             currentCRS: 'EPSG:2202',
@@ -249,36 +231,6 @@ export default {
             }
             return zones;
         },
-        groupedLayers() {
-            const groups = this.mapLayers.reduce((groups, layer) => {
-                if (layer.dataset && layer.dataset.category) {
-                    let category;
-                    if (layer.dataset.category.identifier === 'boundaries') {
-                        category = 'Límites';
-                    } else if (layer.dataset.category.identifier === 'planningCadastre') {
-                        category = 'Ordenamiento';
-                    } else if (layer.dataset.category.identifier === 'transportation') {
-                        category = 'Transporte';
-                    } else if (layer.dataset.category.identifier === 'structure') {
-                        category = 'Estructura Urbana';
-                    } else if (layer.dataset.category.identifier === 'location') {
-                        category = 'Lugares';
-                    } else {
-                        category = layer.dataset.category.identifier;
-                    }
-
-                    if (!groups[category]) {
-                        groups[category] = [];
-                    }
-                    groups[category].push(layer);
-                }
-                return groups;
-            }, {});
-
-            //console.log(groups);  // Log `groupedLayers` in the console
-
-            return groups;
-        },
         labels() {
             if (this.currentCRS === 'EPSG:2202') {
                 return ['Norte', 'Este'];
@@ -287,18 +239,6 @@ export default {
             }
             return [];
         },
-    },
-    watch: {
-        //mapLocation(newLocation) {
-        //    if (newLocation && newLocation.lng && newLocation.lat) {
-        //        const [lng2202, lat2202] = converter4326to2202.forward([this.mapLocation.lng, this.mapLocation.lat]);
-        //        return { lng: lng2202, lat: lat2202 };
-        //    }
-        //    return null;
-        //},
-    },
-    mounted() {
-        this.mapLayers = this.$store.state.mapLayers;  // Update `mapLayers` with the actual map layers from the Vuex store
     },
     methods: {
         itemProps(item) {
@@ -379,29 +319,4 @@ export default {
     z-index: 1;
 }
 
-#sidebar {
-  position: absolute;
-  margin: 30px;
-  /* specify top, left, width, and height as needed */
-}
-
-.overflow-y-auto {
-  overflow-y: auto;
-  max-height: 100px; /* Adjust this value as needed */
-}
-
-.layer-controls {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.layer-opacity {
-  width: 70%;
-}
-
-.layer-visibility {
-  margin-left: 30px;
-}
 </style>

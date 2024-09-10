@@ -1,13 +1,11 @@
 <template>
-    <div id="layout" class="d-flex">
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar">
-            <LayersPanel />
-        </div>
-        <!-- Map container -->
-        <div ref="mapContainer" class="map-container">
-            <Map ref="webMap" />
-        </div>
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <LayersPanel />
+    </div>
+    <!-- Map container -->
+    <div class="map-container">
+        <MapComponent />
     </div>
     <v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="450">
         <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="flat" max-width="450">
@@ -26,7 +24,7 @@
 </template>
 
 <script>
-import Map from "@/components/OlMap.vue";
+import MapComponent from "@/components/MapComponent.vue";
 import LayersPanel from "@/components/LayersPanel.vue";
 import ResultsPanel from "@/components/ResultsPanel.vue"
 import { mapState, mapMutations} from 'vuex';
@@ -34,7 +32,7 @@ import { mapState, mapMutations} from 'vuex';
 export default {
     name: "MapView",
     components: {
-        Map,
+        MapComponent,
         LayersPanel,
         ResultsPanel,
     },
@@ -62,19 +60,14 @@ export default {
 
 <style scoped>
 .map-container {
-  flex-grow: 1;
-  height: calc(100vh - 64px);
-  width: 100%;
   position: relative;
-}
-
-#layout {
-    position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 #sidebar {
     position: absolute;
-    top: 10px;
+    top: 60px;
     left: 10px;
     z-index: 1; /* This will make sure the sidebar is above the map container */
 }
