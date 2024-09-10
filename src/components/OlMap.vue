@@ -104,6 +104,9 @@ export default {
                 this.openSecondDrawer();
                 this.fetchFeatures();
             }
+            if (this.currentVectorLayer) {
+                this.map.removeLayer(this.currentVectorLayer);
+            }
         },
         tracedFeature(newVal, oldVal) {
             if (newVal !== oldVal) {
@@ -164,7 +167,7 @@ export default {
         },
     },
     methods: {
-        ...mapMutations(['setMarkedCoordinate', 'openSecondDrawer']),
+        ...mapMutations(['setMarkedCoordinate', 'openSecondDrawer', 'resetTracedFeature']),
         ...mapActions(['fetchFeatures']),
         initMap() {
             try {

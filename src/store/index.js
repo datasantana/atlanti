@@ -200,13 +200,16 @@ export default createStore({
   
       // Loop over the mapLayers array
       for (const layer of state.mapLayers) {
-        const layerName = layer.name;
-  
-        // Construct the GetFeature request
-        const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
-        axios.get(getFeatureRequest).then(response => {
-          commit('setFeatures', response.data.features);
-        });
+        // if layer visibility is true
+        if (layer.visibility) {
+          const layerName = layer.name;
+    
+          // Construct the GetFeature request
+          const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
+          axios.get(getFeatureRequest).then(response => {
+            commit('setFeatures', response.data.features);
+          });
+        }
       }
     },
     async fetchSearchFeatures({commit}) {

@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapMutations } from 'vuex';
 
 export default {
     name: 'ResultsPanel',
@@ -44,6 +44,7 @@ export default {
     },
     methods: {
         // Add your methods here
+        ...mapMutations(['resetTracedFeature']),
         handleClick(geometry) {
             this.$store.dispatch('traceFeature', geometry);
         },
