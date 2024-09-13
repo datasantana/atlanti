@@ -21,6 +21,13 @@ import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS';
 import WMSCapabilities from 'ol/format/WMSCapabilities';
 import { transformExtent } from 'ol/proj';
+import { Feature } from 'ol';
+import { Point } from 'ol/geom';
+import { Vector as VectorLayer } from 'ol/layer';
+import { Vector as VectorSource } from 'ol/source';
+import { Style, Icon } from 'ol/style';
+import mark from '@/assets/icons8-circle-24.png';
+
 import { mapState, mapActions, mapMutations } from 'vuex';
 
 export default {
@@ -86,6 +93,43 @@ export default {
 
       // Add initial WMS layers
       this.initializeWMSLayers();
+
+      // Add marker interaction
+      this.map.on('click', (event) => {
+        const coordinates = event.coordinate;
+
+        // Remove existing marker if it exists
+        if (this.markerFeature) {
+          this.markerLayer.getSource().removeFeature(this.markerFeature);
+        }
+
+        // Create a new marker feature
+        this.markerFeature = new Feature({
+          geometry: new Point(coordinates)
+        });
+
+        // Style the marker
+        this.markerFeature.setStyle(new Style({
+          image: new Icon({
+            anchor: [0.5, 0.5], // Adjust these values as needed
+            anchorXUnits: 'fraction',
+            anchorYUnits: 'fraction',
+            src: mark,
+          })
+        }));
+
+        // Add the marker to the marker layer
+        if (!this.markerLayer) {
+          this.markerLayer = new VectorLayer({
+            source: new VectorSource({
+              features: [this.markerFeature]
+            })
+          });
+          this.map.addLayer(this.markerLayer);
+        } else {
+          this.markerLayer.getSource().addFeature(this.markerFeature);
+        }
+      });
     },
     async initializeWMSLayers() {
       if (!this.map) {
@@ -207,7 +251,7 @@ export default {
       } else {
         console.warn(`Layer with pk ${layer.dataset.pk} not found in wmsLayers.`);
       }
-    }
+    },
   },
   watch: {
     mapLayers: {
