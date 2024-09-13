@@ -1,5 +1,5 @@
 <template>
-	<v-card variant="flat" class="mx-auto bg-secondary on-secondary d-flex flex-column" style="height: 100%;">
+	<v-card variant="tonal" class="mx-auto d-flex flex-column" color="primary" style="height: 100%;" max-width="350">
 		<v-tabs
 			v-model="tab"
 			bg-color="primary"
@@ -9,7 +9,8 @@
 			<v-tab value="place">Lugar</v-tab>
 			<v-tab value="coordinate">Coordenada</v-tab>
 		</v-tabs>
-		<v-card-text>
+		<v-card-item>
+
 			<v-window v-model="tab">
 				<!--v-window-item value="zone">
 					<v-form>
@@ -43,7 +44,9 @@
 								></v-autocomplete>
 							</v-col>
 							<v-col cols="2">
-								<v-btn id="search-place" size="x-small" icon="mdi-map-search" color="accent" @click="filterAndEmit"></v-btn>
+								<v-btn id="search-place" size="x-small" icon color="accent" @click="filterAndEmit">
+									<v-icon :class="['mdi', 'mdi-map-search']"></v-icon>
+								</v-btn>
 							</v-col>
 						</v-row>
 					</v-form>
@@ -90,15 +93,19 @@
 							</v-form>
 						</v-col>
 						<v-col cols="2">
-								<v-btn id="search-coordinate" size="x-small" icon="mdi-crosshairs-question" color="accent" @click="reprojectAndEmit"></v-btn>
+								<v-btn id="search-coordinate" size="x-small" icon color="accent" @click="reprojectAndEmit">
+									<v-icon :class="['mdi', 'mdi-crosshairs-question']"></v-icon>
+								</v-btn>
 						</v-col>
 					</v-row>
 				</v-window-item>
 			</v-window>
-		</v-card-text>
+		</v-card-item>
 		<v-divider></v-divider>
-		<!--layers component-->
-		<LayersComponent />
+		<v-card-text class="overflow-y-auto">
+			<!--layers component-->
+			<LayersComponent />
+		</v-card-text>
 		<v-divider></v-divider>
 		<!--SRC selector-->
 		<v-card-actions class="mt-auto">

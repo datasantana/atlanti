@@ -1,34 +1,65 @@
 <template>
-    <v-card-text style="max-height: 80vh; overflow-y: auto;">
-        <!-- content of the panel... -->
-        <v-expansion-panels v-model="activePanel" v-if="specialFeature">
-            <v-expansion-panel v-for="(feature, index) in specialFeature" :key="index" class="v-card">
-                <v-expansion-panel-title >
-                <template v-slot:actions>
-                    <v-icon color="accent" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
-                </template>
+    <!-- content of the panel... -->
+    <v-expansion-panels v-model="activePanel" v-if="specialFeature" flat variant="popout" rounded="xl">
+        <v-expansion-panel v-for="(feature, index) in specialFeature" :key="index">
+            <v-expansion-panel-title class="text-overline blue-grey-text">
                 {{ feature.title }} | 
-                </v-expansion-panel-title>
-                <v-expansion-panel-text class="overflow-y-auto" >
-                <div class="wrap-text" v-html="feature.featureinfo_custom_template"></div>
-                </v-expansion-panel-text>
-            </v-expansion-panel>
-            <v-expansion-panel v-for="(feature, index) in otherFeatures" :key="index" class="v-card">
-                <v-expansion-panel-title>
                 <template v-slot:actions>
-                    <v-icon color="secondary" icon="mdi-plus" @click="handleClick(feature.geometry)"></v-icon>
+                    <v-btn
+                      color="teal-lighten-3"
+                      variant="tonal"
+                      size="x-small"
+                      icon
+                      @click="handleClick(feature.geometry)"
+                    >
+                        <v-tooltip activator="parent" location="top">Ver resultado en el mapa</v-tooltip>
+                        <v-icon :class="['mdi', 'mdi-plus']"></v-icon>
+                    </v-btn>
                 </template>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text class="overflow-y-auto text-caption blue-grey-text" >
+            <div class="wrap-text" v-html="feature.featureinfo_custom_template"></div>
+            </v-expansion-panel-text>
+        </v-expansion-panel>
+        <v-expansion-panel v-for="(feature, index) in otherFeatures" :key="index" class="v-card">
+            <v-expansion-panel-title class="text-overline blue-grey-text">
                 {{ feature.title }} | {{ firstVisibleAttributes[index].value }}
-                </v-expansion-panel-title>
-                <v-expansion-panel-text class="overflow-y-auto">
-                <div v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
-                    <p><strong>{{ attribute.attribute_label }}:</strong></p>
-                    <p class="wrap-text">{{ attribute.value }}</p>
-                </div>
-                </v-expansion-panel-text>
-            </v-expansion-panel>
-        </v-expansion-panels>
-    </v-card-text>
+                <template v-slot:actions>
+                    <v-btn
+                      color="teal-lighten-3"
+                      variant="tonal"
+                      size="x-small"
+                      icon
+                      @click="handleClick(feature.geometry)"
+                    >
+                        <v-tooltip activator="parent" location="top">Ver resultado en el mapa</v-tooltip>    
+                        <v-icon :class="['mdi', 'mdi-plus']"></v-icon>
+                    </v-btn>
+                </template>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text class="overflow-y-auto">
+                <v-table density="compact" class="text-caption blue-grey-text">
+                    <!--create a table for visibleAttributes-->
+                    <thead>
+                        <tr>
+                            <th class="text-left">
+                            Atributo
+                            </th>
+                            <th class="text-left">
+                            Valor
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="attribute in visibleAttributes[index]" :key="attribute.attribute">
+                            <td>{{ attribute.attribute_label }}</td>
+                            <td>{{ attribute.value }}</td>
+                        </tr>
+                    </tbody>
+                </v-table>
+            </v-expansion-panel-text>
+        </v-expansion-panel>
+    </v-expansion-panels>
 </template>
 
 <script>
@@ -78,5 +109,9 @@ export default {
 .overflow-y-auto {
   overflow-y: auto;
   max-height: 450px; /* Adjust this value as needed */
+}
+
+.blue-grey-text {
+  color: #607D8B; /* blue-gray color */
 }
 </style>

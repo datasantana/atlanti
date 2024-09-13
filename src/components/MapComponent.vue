@@ -319,7 +319,7 @@ export default {
     // Use dispatch directly from destructured store
     await dispatch('fetchSearchFeatures');
     //await dispatch('fetchFilterFeatures');
-    await dispatch('fetchMapDatasets');
+    //await dispatch('fetchMapDatasets');
   },
 }
 </script>

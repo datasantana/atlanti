@@ -91,6 +91,8 @@ export default createStore({
       state.addedLayer = newLayer;
       // fetch style for the new layer
       this.dispatch('fetchStyle', newLayer.name);
+      // fecth datasets for the new layer
+      this.dispatch('fetchMapDatasets');
     },
     removeLayer(state, layer) {
       //console.log(layer);
@@ -435,21 +437,25 @@ export default createStore({
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
+      // dispatch fetchMapDatasets to get the datasets for the corresponding mapLayers
+      this.dispatch('fetchMapDatasets');
   
       const coordinate = state.markedCoordinate;
       const wfsUrl = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
   
       // Loop over the mapLayers array
       for (const layer of state.mapLayers) {
-        const layerName = layer.name;
-        //console.log('layerName', layerName);
-  
-        // Construct the GetFeature request
-        const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
-        axios.get(getFeatureRequest).then(response => {
-          //console.log(response.data);
-          commit('setFeatures', response.data.features);
-        });
+        // if layer visibility is true
+        if (layer.visibility) {
+          const layerName = layer.name;
+          console.log('layerName', layerName);
+          // Construct the GetFeature request
+          const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
+          axios.get(getFeatureRequest).then(response => {
+            //console.log(response.data);
+            commit('setFeatures', response.data.features);
+          });
+        }
       }
     },
     async fetchSearchFeatures({commit}) {

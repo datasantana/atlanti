@@ -1,22 +1,24 @@
 <template>
 	<!-- Sidebar -->
-	<v-navigation-drawer floating permanent class="bg-blue-grey-lighten-5" width="350">
+	<v-navigation-drawer floating permanent width="350">
 		<LayersPanel />
 	</v-navigation-drawer>
 	<!-- Map container -->
 	<div class="map-container">
 		<MapComponent />
 	</div>
-	<v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="450">
-		<v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="flat" max-width="450">
+	<v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="350">
+		<v-card class="d-flex flex-column fill-height mx-auto" variant="tonal" color="primary" max-width="350">
 			<v-card-actions>
-				<v-btn icon="mdi-close" @click="closeSecondDrawer"></v-btn>
+				<v-btn size="x-small" icon @click="closeSecondDrawer">
+                    <v-icon :class="['mdi', 'mdi-close']"></v-icon>
+                </v-btn>
+                <div class="text-overline mb-1">
+                    Norte: {{ markedCoordinate && markedCoordinate[1] ? parseFloat(markedCoordinate[1].toFixed(2)) : 'N/A' }} - Este: {{ markedCoordinate && markedCoordinate[0] ? parseFloat(markedCoordinate[0].toFixed(2)) : 'N/A' }}
+                </div>
 			</v-card-actions>
 			<v-divider></v-divider>
 			<v-card-item>
-				<div class="text-overline mb-1">
-					Norte: {{ markedCoordinate && markedCoordinate[1] ? parseFloat(markedCoordinate[1].toFixed(2)) : 'N/A' }} - Este: {{ markedCoordinate && markedCoordinate[0] ? parseFloat(markedCoordinate[0].toFixed(2)) : 'N/A' }}
-				</div>
 				<ResultsPanel />
 			</v-card-item>
 		</v-card>
