@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" color="blue-grey-lighten-4" variant="tonal">
+  <v-card class="mx-auto" color="primary" variant="tonal" title="Capas">
     <template v-slot:prepend>
       <v-icon :class="['mdi', 'mdi-earth']"></v-icon>
     </template>

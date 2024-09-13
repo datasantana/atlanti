@@ -104,7 +104,7 @@ export default createStore({
       const filterCategories = categories.filter(category => category.count > 0);
       state.categories = filterCategories
       //console.log(`${filterCategories.length} categories loaded`);
-      //console.log(state.categories);
+      console.log(state.categories);
     },
     setDatasets(state, datasets) {
       state.datasets = datasets;
