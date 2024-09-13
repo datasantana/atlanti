@@ -25,10 +25,13 @@ export default createStore({
     addedLayer: null,
     removedLayer: null,
     categories: [],
-    datasets: [],
+    datasets: [], // used to separate concerns betwwen mapLayers and datasets which is used to generate the layers panel
+    mapDatasets: [], // used to store the datasets for the corresponding mapLayers which is used to generate the results panel
     styles: [],
     // App states
     cqlFilters: [],
+    markedCoordinate: [],
+    secondDrawer: false,
 
     // To be deprecated states
     mapLocation: {
@@ -39,11 +42,11 @@ export default createStore({
       zoom: 11.6,
     },
     maps: [],
-    mapDatasets: [],
+    
     searchFeatures: [],
     filterFeatures: [],
-    secondDrawer: false,
-    markedCoordinate: [],
+    
+    
     features: [],
     tracedFeature: null,
     // other state properties...
@@ -205,36 +208,18 @@ export default createStore({
       }
       console.log('cqlFilters in store', state.cqlFilters);
     },
-
-    // Mutations to be deprecated
-    clearSelectedMap(state) {
-      state.selectedMap = null;
-    },
-    setMapCenter(state, center) {
-      // Reproject the center from EPSG:3857 to EPSG:4326
-      center = toLonLat(center);
-      state.mapLocation.lng = center[0];
-      state.mapLocation.lat = center[1];
-    },
-    setMapZoom(state, zoom) {
-      state.mapLocation.zoom = zoom;
-    },
-    setMapLayers(state, mapLayers) {
-      state.mapLayers = mapLayers;
-    },
-    setMapDatasets(state, datasets) {
-      state.mapDatasets = datasets;
+    setMarkedCoordinate(state, coordinate) {
+      state.markedCoordinate = coordinate;
+      console.log('marked coordinate in store', state.markedCoordinate);
     },
     openSecondDrawer(state) {
       state.secondDrawer = true;
     },
-    closeSecondDrawer(state) {
-      state.secondDrawer = false;
+    // set map datasets first
+    setMapDatasets(state, datasets) {
+      state.mapDatasets = datasets;
     },
-    setMarkedCoordinate(state, coordinate) {
-      state.markedCoordinate = coordinate;
-      //console.log('marked coordinate in store', state.markedCoordinate);
-    },
+    // then set the features
     setFeatures(state, features) {
       const modifiedFeatures = features.map(feature => {
         // Remove unwanted characters from feature.id
@@ -283,6 +268,33 @@ export default createStore({
       state.features.push(...modifiedFeatures);
       //console.log('features in store', state.features);
     },
+    resetFeatures(state) {
+      state.features = [];
+    },
+
+
+    // Mutations to be deprecated
+    clearSelectedMap(state) {
+      state.selectedMap = null;
+    },
+    setMapCenter(state, center) {
+      // Reproject the center from EPSG:3857 to EPSG:4326
+      center = toLonLat(center);
+      state.mapLocation.lng = center[0];
+      state.mapLocation.lat = center[1];
+    },
+    setMapZoom(state, zoom) {
+      state.mapLocation.zoom = zoom;
+    },
+    setMapLayers(state, mapLayers) {
+      state.mapLayers = mapLayers;
+    },
+    
+    
+    closeSecondDrawer(state) {
+      state.secondDrawer = false;
+    },
+    
     joinCategoryToMapLayers(state) {
       // Iterate over mapDatasets and print each dataset's pk
       //state.mapDatasets.forEach(dataset => {
@@ -314,9 +326,7 @@ export default createStore({
   
       //console.log('Updated mapLayers:', state.mapLayers);
     },
-    resetFeatures(state) {
-      state.features = [];
-    },
+    
     setTracedFeature(state, geometry) {
       state.tracedFeature = geometry;
       //console.log('traced feature in store', state.tracedFeature);
@@ -411,15 +421,17 @@ export default createStore({
         commit('setStyles', response.data);
       });
     },
-
-    // Actions to be deprecated
-    async fetchMaps({ commit }) {
-      const url = process.env.VUE_APP_NODE_URL;
-      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
-      const response = await axios.get(`${url}${api}maps/`);
-      commit('setMaps', response.data.maps);
-      // Return the maps
-      return response.data.maps;
+    async fetchMapDatasets({ commit, state }) {
+      const datasets = [];
+      for (const layer of state.mapLayers) {
+        const url = process.env.VUE_APP_NODE_URL;
+        const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+        const response = await axios.get(`${url}${api}datasets/${layer.dataset.pk}`);
+        datasets.push(response.data);
+      }
+      commit('setMapDatasets', datasets);
+      console.log('map datasets in store', state.mapDatasets);
+      //commit('joinCategoryToMapLayers');
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
@@ -430,10 +442,12 @@ export default createStore({
       // Loop over the mapLayers array
       for (const layer of state.mapLayers) {
         const layerName = layer.name;
+        //console.log('layerName', layerName);
   
         // Construct the GetFeature request
         const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
         axios.get(getFeatureRequest).then(response => {
+          //console.log(response.data);
           commit('setFeatures', response.data.features);
         });
       }
@@ -464,6 +478,20 @@ export default createStore({
         console.error('Failed to fetch features:', error);
       }
     },
+
+
+
+    // Actions to be deprecated
+    async fetchMaps({ commit }) {
+      const url = process.env.VUE_APP_NODE_URL;
+      const api = process.env.VUE_APP_NODE_API_ENDPOINT;
+      const response = await axios.get(`${url}${api}maps/`);
+      commit('setMaps', response.data.maps);
+      // Return the maps
+      return response.data.maps;
+    },
+    
+    
     async fetchFilterFeatures({commit}) {
       try {
         const wfsUrl = `${process.env.VUE_APP_NODE_URL}${process.env.VUE_APP_WFS_SERVER_URL}`;
@@ -485,18 +513,7 @@ export default createStore({
         console.error('Failed to fetch features:', error);
       }
     },
-    async fetchDatasets({ commit, state }) {
-      const datasets = [];
-      for (const layer of state.mapLayers) {
-        const url = process.env.VUE_APP_NODE_URL;
-        const api = process.env.VUE_APP_NODE_API_ENDPOINT;
-        const response = await axios.get(`${url}${api}datasets/${layer.dataset.pk}`);
-        datasets.push(response.data);
-      }
-      commit('setMapDatasets', datasets);
-      //console.log('datasets in store', state.mapDatasets);
-      commit('joinCategoryToMapLayers');
-    },
+    
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);
       //console.log('traced feature in store', geometry);

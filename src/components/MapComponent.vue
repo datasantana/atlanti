@@ -27,8 +27,22 @@ import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import { Style, Icon } from 'ol/style';
 import mark from '@/assets/icons8-circle-24.png';
+import proj4 from 'proj4';
+import { toLonLat } from 'ol/proj';
+// Define the source and destination projections
+const sourceProjection4326 = 'EPSG:4326';
+const destinationProjection2202 = 'EPSG:2202';
+
+// Define the custom EPSG:2202 projection
+proj4.defs(destinationProjection2202, "+proj=utm +zone=19 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+
+// Create proj4 converters
+const converter4326to2202 = proj4(sourceProjection4326, destinationProjection2202);
+//const converter2202to4326 = proj4(destinationProjection2202, sourceProjection4326);
 
 import { mapState, mapActions, mapMutations } from 'vuex';
+
+
 
 export default {
   name: 'MapComponent',
@@ -45,8 +59,8 @@ export default {
     ...mapState(['featuredMap', 'mapLayers', 'addedLayer', 'removedLayer', 'selectedMap', 'cqlFilters'])
   },
   methods: {
-    ...mapActions(['getMaps', 'getCategories', 'getDatasets']),
-    ...mapMutations(['setSelectedMap']),
+    ...mapActions(['getMaps', 'getCategories', 'getDatasets', 'fetchFeatures']),
+    ...mapMutations(['setSelectedMap', 'setMarkedCoordinate', 'openSecondDrawer']),
     async fetchInitialData() {
       if (!this.mapLayers || this.mapLayers.length === 0) {
         await this.getMaps();
@@ -129,6 +143,23 @@ export default {
         } else {
           this.markerLayer.getSource().addFeature(this.markerFeature);
         }
+
+        // Zoom to the clicked coordinates
+        this.map.getView().animate({
+            center: event.coordinate,
+            zoom: 18
+        });
+
+        // Convert the clicked coordinate to longitude/latitude and then to EPSG:2202
+        const lonLat = toLonLat(event.coordinate);
+        const coord = converter4326to2202.forward([lonLat[0], lonLat[1]]);
+
+        // Commit the clicked coordinate to the Vuex store
+        this.setMarkedCoordinate(coord);
+
+        // Trigger openSecondDrawer and fetchFeatures
+        this.openSecondDrawer();
+        this.fetchFeatures();
       });
     },
     async initializeWMSLayers() {
@@ -280,7 +311,16 @@ export default {
   },
   created() {
     this.fetchInitialData();
-  }
+  },
+  async beforeMount() {
+    // Destructure for cleaner access to dispatch and state
+    const { dispatch } = this.$store;
+
+    // Use dispatch directly from destructured store
+    await dispatch('fetchSearchFeatures');
+    //await dispatch('fetchFilterFeatures');
+    await dispatch('fetchMapDatasets');
+  },
 }
 </script>
 
