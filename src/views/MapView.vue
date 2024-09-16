@@ -1,32 +1,32 @@
 <template>
-    <div id="layout" class="d-flex">
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar">
-            <LayersPanel />
-        </div>
-        <!-- Map container -->
-        <div ref="mapContainer" class="map-container">
-            <Map ref="webMap" />
-        </div>
-    </div>
-    <v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="450">
-        <v-card class="d-flex flex-column fill-height mx-auto bg-primary on-primary" variant="flat" max-width="450">
-            <v-card-actions>
-                <v-btn icon="mdi-close" @click="closeSecondDrawer"></v-btn>
-            </v-card-actions>
-            <v-divider></v-divider>
-            <v-card-item>
+	<!-- Sidebar -->
+	<v-navigation-drawer floating permanent width="350">
+		<LayersPanel />
+	</v-navigation-drawer>
+	<!-- Map container -->
+	<div class="map-container">
+		<MapComponent />
+	</div>
+	<v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="350">
+		<v-card class="d-flex flex-column fill-height mx-auto" variant="tonal" color="primary" max-width="350">
+			<v-card-actions>
+				<v-btn size="x-small" icon @click="closeSecondDrawer">
+                    <v-icon :class="['mdi', 'mdi-close']"></v-icon>
+                </v-btn>
                 <div class="text-overline mb-1">
                     Norte: {{ markedCoordinate && markedCoordinate[1] ? parseFloat(markedCoordinate[1].toFixed(2)) : 'N/A' }} - Este: {{ markedCoordinate && markedCoordinate[0] ? parseFloat(markedCoordinate[0].toFixed(2)) : 'N/A' }}
                 </div>
-                <ResultsPanel />
-            </v-card-item>
-        </v-card>
-    </v-navigation-drawer>
+			</v-card-actions>
+			<v-divider></v-divider>
+			<v-card-item>
+				<ResultsPanel />
+			</v-card-item>
+		</v-card>
+	</v-navigation-drawer>
 </template>
 
 <script>
-import Map from "@/components/OlMap.vue";
+import MapComponent from "@/components/MapComponent.vue";
 import LayersPanel from "@/components/LayersPanel.vue";
 import ResultsPanel from "@/components/ResultsPanel.vue"
 import { mapState, mapMutations} from 'vuex';
@@ -34,7 +34,7 @@ import { mapState, mapMutations} from 'vuex';
 export default {
     name: "MapView",
     components: {
-        Map,
+        MapComponent,
         LayersPanel,
         ResultsPanel,
     },
@@ -62,19 +62,14 @@ export default {
 
 <style scoped>
 .map-container {
-  flex-grow: 1;
-  height: calc(100vh - 64px);
-  width: 100%;
   position: relative;
-}
-
-#layout {
-    position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 #sidebar {
     position: absolute;
-    top: 10px;
+    top: 60px;
     left: 10px;
     z-index: 1; /* This will make sure the sidebar is above the map container */
 }
