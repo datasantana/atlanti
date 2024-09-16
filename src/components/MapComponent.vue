@@ -25,10 +25,11 @@ import { Feature } from 'ol';
 import { Point } from 'ol/geom';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import { Style, Icon } from 'ol/style';
+import { Style, Icon, Fill, Stroke } from 'ol/style';
 import mark from '@/assets/icons8-circle-24.png';
+import GeoJSON from 'ol/format/GeoJSON';
 import proj4 from 'proj4';
-import { toLonLat } from 'ol/proj';
+import { toLonLat, fromLonLat } from 'ol/proj';
 // Define the source and destination projections
 const sourceProjection4326 = 'EPSG:4326';
 const destinationProjection2202 = 'EPSG:2202';
@@ -38,7 +39,7 @@ proj4.defs(destinationProjection2202, "+proj=utm +zone=19 +ellps=GRS80 +towgs84=
 
 // Create proj4 converters
 const converter4326to2202 = proj4(sourceProjection4326, destinationProjection2202);
-//const converter2202to4326 = proj4(destinationProjection2202, sourceProjection4326);
+const converter2202to4326 = proj4(destinationProjection2202, sourceProjection4326);
 
 import { mapState, mapActions, mapMutations } from 'vuex';
 
@@ -50,17 +51,18 @@ export default {
     // Component data
     loading: true,
     map: null,
+    currentVectorLayer: null,
     wmsLayers: [],
     snackbar: false,
     snackbarMessage: '',
   }),
   
   computed: {
-    ...mapState(['featuredMap', 'mapLayers', 'addedLayer', 'removedLayer', 'selectedMap', 'cqlFilters'])
+    ...mapState(['featuredMap', 'mapLayers', 'addedLayer', 'removedLayer', 'selectedMap', 'cqlFilters', 'markedCoordinate', 'tracedFeature', 'mapLocation'])
   },
   methods: {
     ...mapActions(['getMaps', 'getCategories', 'getDatasets', 'fetchFeatures']),
-    ...mapMutations(['setSelectedMap', 'setMarkedCoordinate', 'openSecondDrawer']),
+    ...mapMutations(['setSelectedMap', 'setMarkedCoordinate', 'openSecondDrawer', 'resetTracedFeature']),
     async fetchInitialData() {
       if (!this.mapLayers || this.mapLayers.length === 0) {
         await this.getMaps();
@@ -110,56 +112,15 @@ export default {
 
       // Add marker interaction
       this.map.on('click', (event) => {
+
         const coordinates = event.coordinate;
 
-        // Remove existing marker if it exists
-        if (this.markerFeature) {
-          this.markerLayer.getSource().removeFeature(this.markerFeature);
-        }
-
-        // Create a new marker feature
-        this.markerFeature = new Feature({
-          geometry: new Point(coordinates)
-        });
-
-        // Style the marker
-        this.markerFeature.setStyle(new Style({
-          image: new Icon({
-            anchor: [0.5, 0.5], // Adjust these values as needed
-            anchorXUnits: 'fraction',
-            anchorYUnits: 'fraction',
-            src: mark,
-          })
-        }));
-
-        // Add the marker to the marker layer
-        if (!this.markerLayer) {
-          this.markerLayer = new VectorLayer({
-            source: new VectorSource({
-              features: [this.markerFeature]
-            })
-          });
-          this.map.addLayer(this.markerLayer);
-        } else {
-          this.markerLayer.getSource().addFeature(this.markerFeature);
-        }
-
-        // Zoom to the clicked coordinates
-        this.map.getView().animate({
-            center: event.coordinate,
-            zoom: 18
-        });
-
         // Convert the clicked coordinate to longitude/latitude and then to EPSG:2202
-        const lonLat = toLonLat(event.coordinate);
+        const lonLat = toLonLat(coordinates);
         const coord = converter4326to2202.forward([lonLat[0], lonLat[1]]);
 
         // Commit the clicked coordinate to the Vuex store
         this.setMarkedCoordinate(coord);
-
-        // Trigger openSecondDrawer and fetchFeatures
-        this.openSecondDrawer();
-        this.fetchFeatures();
       });
     },
     async initializeWMSLayers() {
@@ -283,6 +244,107 @@ export default {
         console.warn(`Layer with pk ${layer.dataset.pk} not found in wmsLayers.`);
       }
     },
+    addMarker(coordinates) {
+      // Remove existing marker if it exists
+      if (this.markerFeature) {
+        this.markerLayer.getSource().removeFeature(this.markerFeature);
+      }
+
+      // Create a new marker feature
+      this.markerFeature = new Feature({
+        geometry: new Point(coordinates)
+      });
+
+      // Style the marker
+      this.markerFeature.setStyle(new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5], // Adjust these values as needed
+          anchorXUnits: 'fraction',
+          anchorYUnits: 'fraction',
+          src: mark,
+        })
+      }));
+
+      // Add the marker to the marker layer
+      if (!this.markerLayer) {
+        this.markerLayer = new VectorLayer({
+          source: new VectorSource({
+            features: [this.markerFeature]
+          }),
+          zIndex: 1000
+        });
+        this.map.addLayer(this.markerLayer);
+      } else {
+        this.markerLayer.getSource().addFeature(this.markerFeature);
+      }
+    },
+    removeMarker() {
+      if (this.markerLayer) {
+        this.markerLayer.getSource().clear();
+      }
+    },
+    addFeature(feature) {
+      // Debugging log
+      console.log('Adding feature:', feature);
+      // Validate the feature
+      if (!feature || !feature.type) {
+        console.error('Invalid feature:', feature);
+        return;
+      }
+
+      // remove existing vector layer if it exists
+      if (this.currentVectorLayer) {
+        this.map.removeLayer(this.currentVectorLayer);
+      }
+      // Create a GeoJSON format writer
+      const format = new GeoJSON();
+
+      // Convert the feature to GeoJSON
+      let geometry;
+      try {
+        geometry = format.readFeatures(feature, {
+          dataProjection: 'EPSG:3857',
+          featureProjection: this.map.getView().getProjection()
+        });
+      } catch (error) {
+        console.error('Error reading features:', error);
+        return;
+      }
+
+      // Create a new vector source and add the features to it
+      const newVectorSource = new VectorSource({
+        features: geometry
+      });
+      // Create a new style with a darker gray fill and a green stroke
+      const style = new Style({
+          fill: new Fill({
+          color: 'rgba(105, 105, 105, 0.5)'  // Darker gray
+          }),
+          stroke: new Stroke({
+          color: 'green',  // Green
+          width: 2
+          })
+        });
+
+        // Create a new vector layer with the new vector source
+        const newVectorLayer = new VectorLayer({
+          source: newVectorSource,
+          style: style,
+          zIndex: 900
+        });
+
+        // Add the new vector layer to the map
+        this.map.addLayer(newVectorLayer);
+
+        // Update the current vector layer
+        this.currentVectorLayer = newVectorLayer;
+
+        // Get the extent of the features
+        const extent = newVectorSource.getExtent();
+
+        // Fit the view to the extent of the features
+        this.map.getView().fit(extent, { duration: 1000 });
+    }
   },
   watch: {
     mapLayers: {
@@ -307,6 +369,43 @@ export default {
           this.updateLayerLegend(newFilters);
         },
         deep: true
+    },
+    markedCoordinate(newVal, oldVal) {
+      // remove existing vector layer if it exists
+      if (this.currentVectorLayer) {
+        this.map.removeLayer(this.currentVectorLayer);
+      }
+      console.log('Watcher triggered:', newVal, oldVal); // Debugging log
+      if (newVal) {
+        // Destructure the newVal array for clarity
+        const [newX, newY] = newVal;
+        // Convert the new coordinate to longitude/latitude and then to EPSG:3758
+        const lonLat = converter2202to4326.forward([newX, newY]);
+        const coord = fromLonLat(lonLat);
+        this.addMarker(coord);
+        // Zoom to the clicked coordinates
+        this.map.getView().animate({
+            center: coord,
+            zoom: 18
+        });
+        
+        // Trigger openSecondDrawer and fetchFeatures
+        this.openSecondDrawer();
+        this.fetchFeatures();
+      } else {
+        this.removeMarker();
+      }
+    },
+    tracedFeature(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.addFeature(newVal);
+      }
+    },
+    mapLocation(newLocation) {
+      if (newLocation) {
+        this.map.getView().setCenter(fromLonLat([newLocation.lng, newLocation.lat]));
+        this.map.getView().setZoom(newLocation.zoom);
+      }
     },
   },
   created() {

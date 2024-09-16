@@ -49,48 +49,44 @@
                 </template>
               </v-expansion-panel-title>
               <v-expansion-panel-text class="blue-grey-text">
-                <v-card loading variant="outlined">
-                  <v-card-text>
-                    <v-row class="d-flex align-center justify-space-between">
-                      <v-col cols="9">
-                        <div class="text-caption">{{ dataset.raw_abstract }}</div>
-                      </v-col>
-                      <v-col cols="3">
-                        <v-btn v-if="getLayerForDataset(dataset.pk)" variant="tonal" size="x-small" icon @click="show = !show">
-                          <v-tooltip activator="parent" location="top">Ver/ocultar leyenda</v-tooltip>
-                          <v-icon :class="show? ['mdi', 'mdi-chevron-up'] : ['mdi', 'mdi-chevron-down']"></v-icon>
-                        </v-btn>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
-                  <v-card-actions v-if="getLayerForDataset(dataset.pk)">
-                    <v-slider
-                      color="blue-grey"
-                      min="0"
-                      max="1"
-                      v-model="getLayerForDataset(dataset.pk).opacity"
-                      hide-details
-                    ></v-slider>
-                    <v-switch
-                      color="blue-grey"
-                      v-model="getLayerForDataset(dataset.pk).visibility"
-                      hide-details
-                    ></v-switch>
-                  </v-card-actions>
-                  <v-expand-transition>
-                    <div v-show="show">
-                      <v-divider></v-divider>
-                      <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
-                        <div v-if="style.type === 'Polygon'" class="polygon legend-item" :style="{ backgroundColor: style.fill.color, width: '10px', height: '20px', marginRight: '5px' }"></div>
-                        <div v-if="style.type === 'Line'" class="line legend-item" :style="{ border: '2px solid ' + style.stroke.color, width: '10px', height: '2px', marginRight: '5px' }"></div>
-                        <div v-if="style.type === 'Point'" class="point legend-item" :style="{ borderRadius: '5px', backgroundColor: style.mark.fill.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '5px' }"></div>
-                        <div class="legend-item">{{ style.name }}</div>
-                        <v-spacer></v-spacer>
-                        <input v-if="style.checkbox" class="legend-item" type="checkbox" v-model="style.visibility" :checked="style.visibility" @change="event => processCqlFilter(event, dataset.alternate, style.name)">
-                      </div>
+                <v-row class="d-flex align-center justify-space-between">
+                  <v-col cols="9">
+                    <div class="text-caption">{{ dataset.raw_abstract }}</div>
+                  </v-col>
+                  <v-col cols="3">
+                    <v-btn v-if="getLayerForDataset(dataset.pk)" variant="tonal" size="x-small" icon @click="show = !show">
+                      <v-tooltip activator="parent" location="top">Ver/ocultar leyenda</v-tooltip>
+                      <v-icon :class="show? ['mdi', 'mdi-chevron-up'] : ['mdi', 'mdi-chevron-down']"></v-icon>
+                    </v-btn>
+                  </v-col>
+                </v-row>
+                <v-card-actions v-if="getLayerForDataset(dataset.pk)">
+                  <v-slider
+                    color="blue-grey"
+                    min="0"
+                    max="1"
+                    v-model="getLayerForDataset(dataset.pk).opacity"
+                    hide-details
+                  ></v-slider>
+                  <v-switch
+                    color="blue-grey"
+                    v-model="getLayerForDataset(dataset.pk).visibility"
+                    hide-details
+                  ></v-switch>
+                </v-card-actions>
+                <v-expand-transition>
+                  <div v-show="show">
+                    <v-divider></v-divider>
+                    <div class="legend" v-for="style in styles[dataset.alternate]" :key="style.name">
+                      <div v-if="style.type === 'Polygon'" class="polygon legend-item" :style="{ backgroundColor: style.fill.color, width: '10px', height: '20px', marginRight: '5px' }"></div>
+                      <div v-if="style.type === 'Line'" class="line legend-item" :style="{ border: '2px solid ' + style.stroke.color, width: '10px', height: '2px', marginRight: '5px' }"></div>
+                      <div v-if="style.type === 'Point'" class="point legend-item" :style="{ borderRadius: '5px', backgroundColor: style.mark.fill.color, width: '10px', height: '10px', borderRadius: '50%', marginRight: '5px' }"></div>
+                      <div class="legend-item">{{ style.name }}</div>
+                      <v-spacer></v-spacer>
+                      <input v-if="style.checkbox" class="legend-item" type="checkbox" v-model="style.visibility" :checked="style.visibility" @change="event => processCqlFilter(event, dataset.alternate, style.name)">
                     </div>
-                  </v-expand-transition>
-                </v-card>
+                  </div>
+                </v-expand-transition>
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>

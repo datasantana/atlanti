@@ -32,6 +32,8 @@ export default createStore({
     cqlFilters: [],
     markedCoordinate: [],
     secondDrawer: false,
+    features: [], // used to store the features for the corresponding mapLayers which is used to generate the results panel
+    tracedFeature: null,
 
     // To be deprecated states
     mapLocation: {
@@ -47,8 +49,7 @@ export default createStore({
     filterFeatures: [],
     
     
-    features: [],
-    tracedFeature: null,
+    
     // other state properties...
   },
   getters: {
@@ -330,8 +331,12 @@ export default createStore({
     },
     
     setTracedFeature(state, geometry) {
-      state.tracedFeature = geometry;
-      //console.log('traced feature in store', state.tracedFeature);
+      if (state.tracedFeature) {
+        state.tracedFeature = null
+      } else {
+        state.tracedFeature = geometry;
+      }
+      console.log('traced feature in store', state.tracedFeature);
     },
     resetTracedFeature(state) {
       state.tracedFeature = null;
@@ -432,8 +437,7 @@ export default createStore({
         datasets.push(response.data);
       }
       commit('setMapDatasets', datasets);
-      console.log('map datasets in store', state.mapDatasets);
-      //commit('joinCategoryToMapLayers');
+      //console.log('map datasets in store', state.mapDatasets);
     },
     fetchFeatures({ state, commit }) {
       commit('resetFeatures'); // reset features to an empty array
@@ -484,6 +488,10 @@ export default createStore({
         console.error('Failed to fetch features:', error);
       }
     },
+    traceFeature({ commit }, geometry) {
+      commit('setTracedFeature', geometry);
+      console.log('feature to be traced', geometry);
+    },
 
 
 
@@ -520,10 +528,7 @@ export default createStore({
       }
     },
     
-    traceFeature({ commit }, geometry) {
-      commit('setTracedFeature', geometry);
-      //console.log('traced feature in store', geometry);
-    },
+    
     markCoordinate({ commit }, coordinate) {
       commit('setMarkedCoordinate', coordinate);
       commit('resetTracedFeature');

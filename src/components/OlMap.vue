@@ -78,6 +78,7 @@ export default {
         markedCoordinate(newVal, oldVal) {
             // Direct comparison might be unnecessary if Vue guarantees this watcher is only triggered on actual changes.
             // However, if you want to ensure there's a significant change (e.g., beyond a minor floating-point difference), you might keep it.
+            console.log('Watcher triggered:', newVal, oldVal); // Debugging log
             if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
                 this.vectorSource.clear(); // Clear the vector source
 
