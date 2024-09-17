@@ -340,6 +340,7 @@ export default createStore({
     },
     resetTracedFeature(state) {
       state.tracedFeature = null;
+      console.log('traced feature reset', state.tracedFeature);
     },
     setSearchFeatures(state, features) {
       state.searchFeatures = features;

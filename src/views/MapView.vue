@@ -10,7 +10,7 @@
 	<v-navigation-drawer v-model="$store.state.secondDrawer" location="right" width="350">
 		<v-card class="d-flex flex-column fill-height mx-auto" variant="tonal" color="primary" max-width="350">
 			<v-card-actions>
-				<v-btn size="x-small" icon @click="closeSecondDrawer">
+				<v-btn size="x-small" icon @click="handleClose">
                     <v-icon :class="['mdi', 'mdi-close']"></v-icon>
                 </v-btn>
                 <div class="text-overline mb-1">
@@ -55,7 +55,11 @@ export default {
         ...mapState(['markedCoordinate']),
     },
     methods: {
-        ...mapMutations(['closeSecondDrawer']),
+        ...mapMutations(['closeSecondDrawer', 'resetTracedFeature']),
+        handleClose() {
+            this.closeSecondDrawer();
+            this.resetTracedFeature();
+        },
     },
 };
 </script>

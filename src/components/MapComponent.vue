@@ -344,6 +344,12 @@ export default {
 
         // Fit the view to the extent of the features
         this.map.getView().fit(extent, { duration: 1000 });
+    },
+    removeTracedFeature() {
+      if (this.currentVectorLayer) {
+        this.map.removeLayer(this.currentVectorLayer);
+        this.currentVectorLayer = null;
+      }
     }
   },
   watch: {
@@ -396,9 +402,12 @@ export default {
         this.removeMarker();
       }
     },
-    tracedFeature(newVal, oldVal) {
-      if (newVal !== oldVal) {
+    tracedFeature(newVal) {
+      if (newVal !== null) {
         this.addFeature(newVal);
+      } else {
+        console.log('Removing traced feature');
+        this.removeTracedFeature();
       }
     },
     mapLocation(newLocation) {
