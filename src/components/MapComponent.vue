@@ -19,8 +19,6 @@ import { Map, View } from 'ol';
 import OSM from 'ol/source/OSM';
 import TileLayer from 'ol/layer/Tile';
 import TileWMS from 'ol/source/TileWMS';
-import WMSCapabilities from 'ol/format/WMSCapabilities';
-import { transformExtent } from 'ol/proj';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom';
 import { Vector as VectorLayer } from 'ol/layer';
@@ -62,7 +60,7 @@ export default {
   },
   methods: {
     ...mapActions(['getMaps', 'getCategories', 'getDatasets', 'fetchFeatures']),
-    ...mapMutations(['setSelectedMap', 'setMarkedCoordinate', 'openSecondDrawer', 'resetTracedFeature']),
+    ...mapMutations(['setSelectedMap', 'setMapCenter', 'setMapZoom', 'setMarkedCoordinate', 'openSecondDrawer', 'resetTracedFeature']),
     async fetchInitialData() {
       if (!this.mapLayers || this.mapLayers.length === 0) {
         await this.getMaps();
@@ -91,24 +89,37 @@ export default {
       }
     },
     initializeMap() {
+      const { lng, lat, zoom } = this.mapLocation;
       // Initialize the map
       this.map = new Map({
         target: 'map',
         layers: [
           new TileLayer({
             source: new OSM({
-              cacheSize: 4096,
+              cacheSize: 1000,
             })
           })
         ],
         view: new View({
-          center: [0, 0],
-          zoom: 2
+          center: fromLonLat([lng, lat]),
+          zoom: zoom,
         })
       });
 
       // Add initial WMS layers
       this.initializeWMSLayers();
+
+      // Add event listener for map center change
+      this.map.getView().on('change:center', () => {
+        const center = toLonLat(this.map.getView().getCenter());
+        this.setMapCenter(center);
+      });
+
+      // Add event listener for map zoom change
+      this.map.getView().on('change:resolution', () => {
+        const zoom = this.map.getView().getZoom();
+        this.setMapZoom(zoom);
+      });
 
       // Add marker interaction
       this.map.on('click', (event) => {
@@ -150,25 +161,6 @@ export default {
           });
           this.map.addLayer(wmsLayer);
           this.wmsLayers.push(wmsLayer);
-
-          // Fetch WMS capabilities and fit view to extent
-          try {
-            const response = await fetch(wmsLink.url + '?service=WMS&request=GetCapabilities');
-            const text = await response.text();
-            const parser = new WMSCapabilities();
-            const result = parser.read(text);
-
-            // Extract the extent from the capabilities
-            const extent = result.Capability.Layer.BoundingBox[0].extent;
-
-            // Transform the extent if necessary
-            const transformedExtent = transformExtent(extent, 'EPSG:4326', 'EPSG:3857');
-
-            // Fit the view to the extent
-            this.map.getView().fit(transformedExtent);
-          } catch (error) {
-            console.error('Failed to fetch WMS capabilities:', error);
-          }
         }
       }
     },

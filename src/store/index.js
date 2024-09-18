@@ -1,12 +1,7 @@
 import { createStore } from 'vuex'
 import axios from 'axios';
-//axios.defaults.baseURL = process.env.VUE_APP_NODE_URL;
-//axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-
-import { toLonLat } from 'ol/proj';
 
 import * as turf from '@turf/turf';
-//import { set } from 'core-js/core/dict';
 
 export default createStore({
   state: {
@@ -274,29 +269,33 @@ export default createStore({
     resetFeatures(state) {
       state.features = [];
     },
-
-
-    // Mutations to be deprecated
-    clearSelectedMap(state) {
-      state.selectedMap = null;
+    closeSecondDrawer(state) {
+      state.secondDrawer = false;
+    },
+    SET_MAP_LOCATION(state, location) {
+      state.mapLocation = location;
+      //console.log('map location in store', state.mapLocation);
     },
     setMapCenter(state, center) {
       // Reproject the center from EPSG:3857 to EPSG:4326
-      center = toLonLat(center);
+      //center = toLonLat(center);
       state.mapLocation.lng = center[0];
       state.mapLocation.lat = center[1];
     },
     setMapZoom(state, zoom) {
       state.mapLocation.zoom = zoom;
     },
+
+
+    // Mutations to be deprecated
+    clearSelectedMap(state) {
+      state.selectedMap = null;
+    },
     setMapLayers(state, mapLayers) {
       state.mapLayers = mapLayers;
     },
     
     
-    closeSecondDrawer(state) {
-      state.secondDrawer = false;
-    },
     
     joinCategoryToMapLayers(state) {
       // Iterate over mapDatasets and print each dataset's pk
@@ -348,10 +347,7 @@ export default createStore({
     setFilterFeatures(state, features) {
       state.filterFeatures = features;
     },
-    SET_MAP_LOCATION(state, location) {
-      state.mapLocation = location;
-      //console.log('map location in store', state.mapLocation);
-    },
+    
     // other mutations...
   },
   actions: {
@@ -493,6 +489,9 @@ export default createStore({
       commit('setTracedFeature', geometry);
       console.log('feature to be traced', geometry);
     },
+    updateMapLocation({ commit }, location) {
+      commit('SET_MAP_LOCATION', location);
+  },
 
 
 
@@ -534,9 +533,7 @@ export default createStore({
       commit('setMarkedCoordinate', coordinate);
       commit('resetTracedFeature');
     },
-    updateMapLocation({ commit }, location) {
-        commit('SET_MAP_LOCATION', location);
-    },
+    
     // other actions...
   },
   modules: {
