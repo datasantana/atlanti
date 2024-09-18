@@ -124,13 +124,13 @@ export default {
       const newValue = event.target.checked;
       console.log(`Visibility changed to ${styleName} in ${datasetName} to: ${newValue}`);
       const style = this.styles[datasetName];
-      console.log(style);
+      //console.log(style);
       // get the style objects that has visibility property set to true
       const visibleStyles = Object.values(style).filter(item => item.visibility);
-      console.log(visibleStyles);
+      //console.log(visibleStyles);
       // get the filter property of the visible styles
       const filters = visibleStyles.map(item => item.filter);
-      console.log(filters);
+      //console.log(filters);
       // return list of unique propertyName from the filters object
       const propertyNames = [...new Set(filters.map(filter => filter.propertyName))];
       const propertyValues = filters.map(filter => filter.literal);

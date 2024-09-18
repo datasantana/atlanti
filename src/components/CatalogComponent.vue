@@ -59,7 +59,7 @@ export default {
 	},
 	created() {
 		this.$store.dispatch('getMaps').then(() => {
-			console.log('Maps data fetched before CatalogComponent is created');
+			//console.log('Maps data fetched before CatalogComponent is created');
 			this.loading = false;
 		});
 	},

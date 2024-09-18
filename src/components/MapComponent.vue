@@ -79,7 +79,7 @@ export default {
     },
     showStatus(string) {
       try {
-        console.log('Categories and Datasets fetched before MapComponent is created');
+        //console.log('Categories and Datasets fetched before MapComponent is created');
         this.snackbarMessage = `${string} cargado con éxito!`;
         this.snackbar = true;
       } catch (error) {
@@ -200,7 +200,7 @@ export default {
         const wmsLayer = this.wmsLayers[wmsLayerIndex];
         this.map.removeLayer(wmsLayer);
         this.wmsLayers.splice(wmsLayerIndex, 1);
-        console.log(`Layer with pk ${layerPk} removed successfully.`);
+        //console.log(`Layer with pk ${layerPk} removed successfully.`);
       } else {
         console.warn(`Layer with pk ${layerPk} not found in wmsLayers.`);
       }
@@ -216,7 +216,7 @@ export default {
 
         if (layer) {
           const source = layer.getSource();
-          console.log(`Updating layer ${filter.datasetName} with CQL_FILTER: ${filter.query}`);
+          //console.log(`Updating layer ${filter.datasetName} with CQL_FILTER: ${filter.query}`);
           source.updateParams({
             CQL_FILTER: filter.query
           });
@@ -231,7 +231,7 @@ export default {
       if (wmsLayer) {
         wmsLayer.setOpacity(layer.opacity);
         wmsLayer.setVisible(layer.visibility);
-        console.log(`Updated layer ${layer.dataset.pk} properties: opacity=${layer.opacity}, visibility=${layer.visibility}`);
+        //console.log(`Updated layer ${layer.dataset.pk} properties: opacity=${layer.opacity}, visibility=${layer.visibility}`);
       } else {
         console.warn(`Layer with pk ${layer.dataset.pk} not found in wmsLayers.`);
       }
@@ -277,7 +277,7 @@ export default {
     },
     addFeature(feature) {
       // Debugging log
-      console.log('Adding feature:', feature);
+      //console.log('Adding feature:', feature);
       // Validate the feature
       if (!feature || !feature.type) {
         console.error('Invalid feature:', feature);
@@ -363,17 +363,17 @@ export default {
     },
     cqlFilters: {
         handler(newFilters) {
-          console.log('Updating layer legend with new filters:', newFilters);  
+          //console.log('Updating layer legend with new filters:', newFilters);  
           this.updateLayerLegend(newFilters);
         },
         deep: true
     },
-    markedCoordinate(newVal, oldVal) {
+    markedCoordinate(newVal) {
       // remove existing vector layer if it exists
       if (this.currentVectorLayer) {
         this.map.removeLayer(this.currentVectorLayer);
       }
-      console.log('Watcher triggered:', newVal, oldVal); // Debugging log
+      //console.log('Watcher triggered:', newVal, oldVal); // Debugging log
       if (newVal) {
         // Destructure the newVal array for clarity
         const [newX, newY] = newVal;
@@ -398,7 +398,7 @@ export default {
       if (newVal !== null) {
         this.addFeature(newVal);
       } else {
-        console.log('Removing traced feature');
+        //console.log('Removing traced feature');
         this.removeTracedFeature();
       }
     },

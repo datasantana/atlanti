@@ -99,13 +99,13 @@ export default createStore({
       state.removedLayer = null;
       // set the removedLayer to the layer dataset pk
       state.removedLayer = layer;
-      console.log('Layer removed', state.removedLayer);
+      //console.log('Layer removed', state.removedLayer);
     },
     setCategories(state, categories) {
       const filterCategories = categories.filter(category => category.count > 0);
       state.categories = filterCategories
       //console.log(`${filterCategories.length} categories loaded`);
-      console.log(state.categories);
+      //console.log(state.categories);
     },
     setDatasets(state, datasets) {
       state.datasets = datasets;
@@ -204,11 +204,11 @@ export default createStore({
       } else {
         state.cqlFilters.push(filters);
       }
-      console.log('cqlFilters in store', state.cqlFilters);
+      //('cqlFilters in store', state.cqlFilters);
     },
     setMarkedCoordinate(state, coordinate) {
       state.markedCoordinate = coordinate;
-      console.log('marked coordinate in store', state.markedCoordinate);
+      //console.log('marked coordinate in store', state.markedCoordinate);
     },
     openSecondDrawer(state) {
       state.secondDrawer = true;
@@ -368,7 +368,7 @@ export default createStore({
     },
     async getCategories ({ state, commit }) {
       const url = `${state.nodeServerUrl}${state.nodeServerApi}${state.categoriesEndpoint}`
-      console.log(`Fetching categories from ${url}`)
+      //console.log(`Fetching categories from ${url}`)
       let page = 1;
       let allCategories = [];
       let total = 0;
@@ -385,7 +385,7 @@ export default createStore({
           allCategories = allCategories.concat(response.data.categories);
           page++;
         } while (allCategories.length < total);
-        console.log(`${allCategories.length} categories fetched`);
+        //console.log(`${allCategories.length} categories fetched`);
         commit('setCategories', allCategories);
       } catch (error) {
         console.error('Failed to fetch categories from GeoNode:', error);
@@ -393,7 +393,7 @@ export default createStore({
     },
     async getDatasets ({ state, commit }) {
       const url = `${state.nodeServerUrl}${state.nodeServerApi}${state.datasetsEndpoint}`
-      console.log(`Fetching datasets from ${url}`)
+      //console.log(`Fetching datasets from ${url}`)
       let page = 1;
       let allDatasets = [];
       let total = 0;
@@ -410,7 +410,7 @@ export default createStore({
           allDatasets = allDatasets.concat(response.data.datasets);
           page++;
         } while (allDatasets.length < total);
-        console.log(`${allDatasets.length} datasets fetched`);
+        //console.log(`${allDatasets.length} datasets fetched`);
         commit('setDatasets', allDatasets)
       } catch (error) {
         console.error('Failed to fetch datasets from GeoNode:', error);
@@ -449,7 +449,7 @@ export default createStore({
         // if layer visibility is true
         if (layer.visibility) {
           const layerName = layer.name;
-          console.log('layerName', layerName);
+          //console.log('layerName', layerName);
           // Construct the GetFeature request
           const getFeatureRequest = `${wfsUrl}?service=WFS&version=1.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=epsg:3857&cql_filter=INTERSECTS(geometry, POINT(${coordinate[0]} ${coordinate[1]}))`;
           axios.get(getFeatureRequest).then(response => {
@@ -487,7 +487,7 @@ export default createStore({
     },
     traceFeature({ commit }, geometry) {
       commit('setTracedFeature', geometry);
-      console.log('feature to be traced', geometry);
+      //console.log('feature to be traced', geometry);
     },
     updateMapLocation({ commit }, location) {
       commit('SET_MAP_LOCATION', location);

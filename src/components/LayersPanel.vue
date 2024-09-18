@@ -44,7 +44,7 @@
 								></v-autocomplete>
 							</v-col>
 							<v-col cols="2">
-								<v-btn id="search-place" size="x-small" icon color="accent" @click="filterAndEmit">
+								<v-btn id="search-place" size="x-small" icon color="accent" @click="filterAndEmit" variant="flat">
 									<v-icon :class="['mdi', 'mdi-map-search']"></v-icon>
 								</v-btn>
 							</v-col>
@@ -93,7 +93,7 @@
 							</v-form>
 						</v-col>
 						<v-col cols="2">
-								<v-btn id="search-coordinate" size="x-small" icon color="accent" @click="reprojectAndEmit">
+								<v-btn id="search-coordinate" size="x-small" icon color="accent" @click="reprojectAndEmit" variant="flat">
 									<v-icon :class="['mdi', 'mdi-crosshairs-question']"></v-icon>
 								</v-btn>
 						</v-col>
@@ -119,7 +119,7 @@
 					></v-select>
 				</v-col>
 				<v-col cols="2">
-					<v-btn size="small" icon @click="resetMapLocation" color="accent">
+					<v-btn size="x-small" icon @click="resetMapLocation" color="accent" variant="flat">
 						<v-icon :class="['mdi', 'mdi-home']"></v-icon>
 					</v-btn>
 				</v-col>
