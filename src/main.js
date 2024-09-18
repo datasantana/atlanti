@@ -12,6 +12,9 @@ import '@mdi/font/css/materialdesignicons.css'
 // Font Awesome
 import '@fortawesome/fontawesome-free/css/all.css'; // Import Font Awesome CSS
 
+//Custom
+import './scss/main.scss'
+
 loadFonts()
 
 createApp(App).use(store).use(router).use(vuetify).mount('#app')
